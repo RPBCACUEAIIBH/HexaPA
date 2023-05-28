@@ -1,0 +1,7 @@
+Ignore/*
+Conversations/*
+.Keys.bin
+.Settings.bin
+Log.log
+__pycache__/*
+*/__pycache__/*
