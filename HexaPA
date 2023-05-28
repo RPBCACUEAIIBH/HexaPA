@@ -9,6 +9,9 @@ import os
 if not os.path.exists ("Conversations"):
     os.makedirs ("Conversations")
 
+if os.path.exists ("Log.log"):
+	os.remove ("Log.log")
+
 if Source.Options.Args.debug:
 	HL.HexaLog.LogSettings ('D', 0xFFFF)
 elif Source.Options.Args.verbose:

@@ -207,16 +207,18 @@ class GUI:
 		self.KeyRequestWindow.PoweredByLogo.columnconfigure (0, weight = 1)
 		self.KeyRequestWindow.PoweredByLogo.rowconfigure (0, weight = 1)
 		self.KeyRequestWindow.PoweredByLabel = None
-		self.KeyRequestWindow.PoweredByLabel = Window.Label (self.KeyRequestWindow.PoweredByLogo, 0, 0, "NSE", "Powered by:", Theme.BGColor, TextSize = 24, Anchor = "center", Width = None, PadX = None)
-		self.OpenAILogo = ImageTk.PhotoImage (Image.open (io.BytesIO (cairosvg.svg2png (bytestring = open ("Images/openai-white-lockup.svg", "rb").read (), scale = 0.25)))) # Either use: "scale = 1" OR "output_width = 150, output_height = 150"
+		self.KeyRequestWindow.PoweredByLabel = Window.Label (self.KeyRequestWindow.PoweredByLogo, 0, 0, "NSE", "Powered by:", Theme.BGColor, TextSize = 24, Anchor = "center", Width = None)
+		self.OpenAILogo = ImageTk.PhotoImage (Image.open (io.BytesIO (cairosvg.svg2png (bytestring = open ("Images/openai-white-lockup.svg", "rb").read (), scale = 0.225)))) # Either use: "scale = 1" OR "output_width = 150, output_height = 150"
 		self.KeyRequestWindow.OpenAILogo = None
-		self.KeyRequestWindow.OpenAILogo = Window.ImageLabel (self.KeyRequestWindow.PoweredByLogo, 0, 1, "W", self.OpenAILogo, PadX = 25, PadY = 25, Command = self.Link_OpenAI_API)
+		self.KeyRequestWindow.OpenAILogo = Window.ImageLabel (self.KeyRequestWindow.PoweredByLogo, 0, 1, "W", self.OpenAILogo, PadX = 15, PadY = 20, Command = self.Link_OpenAI_API)
 		Text = "Please enter your OpenAI API key!\nIf you don't have one clik here and get one."
 		self.KeyRequestWindow.OpenAIRequestLabel = None
 		self.KeyRequestWindow.OpenAIRequestLabel = Window.Label (self.KeyRequestWindow.OpenAIFrame, 1, 0, "EW", Text, Theme.BGColor, Width = None, PadX = None, PadY = None)
+		self.KeyRequestWindow.OpenAIRequestLabel.bind ("<Button-1>", lambda e: self.Link_OpenAI_API ())
 		Text = "(You will need to register. Once you're logged in, find manage account in the\ntop right corner and set up payment method at billing, then generate an API key.\nIt's affordable, but you may also want to set a monthly limit, just in case.)"
 		self.KeyRequestWindow.OpenAIGuideLabel = None
 		self.KeyRequestWindow.OpenAIGuideLabel = Window.Label (self.KeyRequestWindow.OpenAIFrame, 2, 0, "EW", Text, Theme.BGColor, Theme.SmallText, Theme.SmallTextSize, Width = None, PadX = None, PadY = None)
+		self.KeyRequestWindow.OpenAIGuideLabel.bind ("<Button-1>", lambda e: self.Link_OpenAI_API ())
 		self.KeyRequestWindow.KeyEntry_OpenAI = None
 		self.KeyRequestWindow.KeyEntry_OpenAI = Window.Entry (self.KeyRequestWindow.OpenAIFrame, 3, 0, "EW", Width = 50, PadX = None)
 		self.KeyRequestWindow.KeyEntry_OpenAI.focus ()
@@ -230,7 +232,7 @@ class GUI:
 		self.KeyRequestWindow.CommonFrame.columnconfigure (0, weight = 1)
 		self.KeyRequestWindow.CommonFrame.rowconfigure (0, weight = 1)
 		if Error == None:
-			Error = "Error: Sorry can't display OpenAI logo due to\nOpenAI's ToS section 9b -> No prior written consent. ;)" # Very serious corporate joke. :P
+			Error = ""
 		self.KeyRequestWindow.ErrorLabel = None
 		self.KeyRequestWindow.ErrorLabel = Window.Label (self.KeyRequestWindow.CommonFrame, 0, 0, "EW", Error, Theme.BGColor, Theme.Error, Width = None, PadX = None, PadY = None)
 		self.KeyRequestWindow.ButtonsFrame = None

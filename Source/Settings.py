@@ -11,8 +11,8 @@ class Settings:
 	SoftwareVersion = 0.1 # These should not be loaded, to avoid using old version when updated...
 	DataVersion = 0.2 # These should not be loaded, to avoid using old version when updated...
 	UserName = None
-	MaxContextMsg = 10 # Max Number of messages to send to the AI. (Multiples of 2 recommended.)
-	MaxTokens = 1000 # Max amount of total tokens.
+	MaxContextMsg = 100 # Max Number of messages to send to the AI. (Multiples of 2 recommended.)
+	MaxTokens = 1900 # Max amount of total tokens.
 	AutoContext = True # Auto / selected context inclusion.
 	
 	def __init__ (self, UserName = None):

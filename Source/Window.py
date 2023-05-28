@@ -158,7 +158,7 @@ class Window:
 		self.Title.columnconfigure (0, weight = 1)
 		self.Title.rowconfigure (0, weight = 1)
 		# self. is important for self.OSRCLogo otherwise the data is discarded before displaying so you get no error but no image either!
-		self.OSRCLogo = ImageTk.PhotoImage (Image.open (io.BytesIO (cairosvg.svg2png (bytestring = open (self.SVGFile_OSRCLogo, "rb").read (), scale = 1)))) # Either use: "scale = 1" OR "output_width = 150, output_height = 150"
+		self.OSRCLogo = ImageTk.PhotoImage (Image.open (io.BytesIO (cairosvg.svg2png (bytestring = open (self.SVGFile_OSRCLogo, "rb").read (), scale = 1.2)))) # Either use: "scale = 1" OR "output_width = 150, output_height = 150"
 		Logo = tk.Label (self.Title, image = self.OSRCLogo, bg = Theme.BGColor, fg = Theme.Error)
 		Logo.grid (row = 0, column = 0, sticky = "NSEW")
 		if Command != None:
@@ -167,12 +167,14 @@ class Window:
 		TextFrame.grid (row = 0, column = 1, sticky = "NSEW")
 		TextFrame.columnconfigure (0, weight = 1)
 		TextFrame.rowconfigure (0, weight = 1)
-		Label = tk.Label (TextFrame, text = "HexaPA", font = (Theme.Font, 32), bg = Theme.BGColor, fg = Theme.Text)
+		Label = tk.Label (TextFrame, text = "HexaPA", font = (Theme.Font, 42, 'bold'), bg = Theme.BGColor, fg = Theme.Text)
 		Label.grid (row = 0, column = 0, padx = 25, sticky = "EW")
+		Label = tk.Label (TextFrame, text = "Productivity Accelerator", font = (Theme.Font, Theme.SmallTextSize * 2 - 2, 'bold'), bg = Theme.BGColor, fg = Theme.Text)
+		Label.grid (row = 1, column = 0, padx = 25, sticky = "EW")
 		if Command != None:
 			Label.bind ("<Button-1>", lambda e: Command ())
 		Text = "License: BSD 3-Clause License\nCopyright (c) 2023, Tibor Áser Veres\nAll rights reserved."
-		Label_Credits = tk.Label (TextFrame, text = Text, font = (Theme.Font, Theme.TextSize), bg = Theme.BGColor, fg = Theme.Text)
-		Label_Credits.grid (row = 1, column = 0, padx = 25, sticky = "EW")
+		Label_Credits = tk.Label (TextFrame, text = Text, font = (Theme.Font, Theme.TextSize), bg = Theme.BGColor, fg = Theme.SmallText)
+		Label_Credits.grid (row = 2, column = 0, padx = 25, sticky = "EW")
 		if Command != None:
 			Label_Credits.bind ("<Button-1>", lambda e: Command ())
