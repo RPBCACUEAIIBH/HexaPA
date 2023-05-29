@@ -1,5 +1,6 @@
 Ignore/*
 Conversations/*
+Export/*
 .Keys.bin
 .Settings.bin
 Log.log

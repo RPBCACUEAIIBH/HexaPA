@@ -7,6 +7,7 @@ import webbrowser
 import tkinter as tk
 import datetime
 import platform
+import json
 
 from HexaLibPython import HexaLog as HL
 from Source.Window import *
@@ -526,53 +527,21 @@ class GUI:
 		Text = self.ChatWindow.UserInputTextBox.get ("1.0", "end").strip ()
 		self.ChatWindow.UserInputTextBox.delete ('1.0', "end") # For some odd reason if this is after the DisplayMessage call, the User input may not get immediately cleared...
 		self.DisplayMessage (self.S.UserName, Text)
-		Index = len (self.ChatWindow.Messages) - 1 # Last displayed message...
+		PromptIndex = len (self.ChatWindow.Messages) - 1 # Last displayed message...
 		
 		### Construct Rules for sending... (Required by the API)
 		if self.Conversation.LatestRules != None:
 			Rules = {"role": "system", "content": self.Conversation.Rules.Rules}
-			self.ChatWindow.Messages[Index].MessageData.Rules = self.Conversation.LatestRules
+			self.ChatWindow.Messages[PromptIndex].MessageData.Rules = self.Conversation.LatestRules
 		else:
 			Rules = {"role": "system", "content": ""}
 		
-		### Record promt into a new block.
-		self.Conversation.NewBlock (self.ChatWindow.Messages[Index].MessageData.Dump (self.K.UserKey))
-		self.ChatWindow.Messages[Index].MessageData.BlockID = self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID
-		
-		### Generate subject if not set by the user.
-		BlockID = 0
-		FirstMsg = self.ChatWindow.Messages[Index].MessageData
-		for ID in range (0, len (self.Conversation.Blocks)): # This should not be a long loop unless you've edited the rules 100s of thousands of times before even starting the conversation.
-			FirstMsg = Data ()
-			FirstMsg.Parse (self.K.UserKey, self.Conversation.Blocks[ID].Data, ID)
-			if FirstMsg.DataType == "Message":
-				BlockID = ID
-				break
-		if self.Conversation.Subject == "Enter the subject here... (optional)" or self.Conversation.Subject == "":
-			SubjectDetectionRules = {"role": "system", "content": "Your task is to determine what is the subject of messages in a very short sentences. Never return more then one sentence."}
-			Context = [{"role": "user", "content": "What is the subject of the following message?\n\nMessage:\nGive me a sentence for testing my application."}, {"role": "assistant", "content": "Sentence request for testing."}] # This works with Content = None, but more reliable with an example. Otherwise it may start with "Subject: ", or "The subject of this..." which is not desirable.
-			Prompt = {"role": "user", "content": "What is the subject of the following message?\n\nMessage:\n" + FirstMsg.Message}
-			HL.Log ("GUI.py: Unspecified Subject! --> Asking the AI to summarize it in a sentence.", 'I', 2)
-			Response = Communicate.AskTheAI ("OpenAI", "gpt-3.5-turbo", SubjectDetectionRules, Context, Prompt) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
-			if Response: # AI Respose
-				self.Conversation.Subject = Response['choices'][0]['message']['content']
-				HL.Log ("GUI.py: AI said the subject is: " + self.Conversation.Subject, "I", 2)
-				self.Conversation.Subject += " (Created at " + self.Conversation.Blocks[BlockID].TimeStamp + ")"
-				self.ChatWindow.SubjectLabel.config (text = self.Conversation.Subject)
-		elif BlockID == len (self.Conversation.Blocks): # Otherwise it may add the timestamp multiple times...
-			self.Conversation.Subject += " (Created at " + self.Conversation.Blocks[BlockID].TimeStamp + ")"
-			self.ChatWindow.SubjectLabel.config (text = self.Conversation.Subject)
-		
-		### Generate filename if does not exist...
-		if self.Conversation.File == None:
-			self.Conversation.File = "Conversations/" + re.sub ('[\W_]+', '_', self.Conversation.Blocks[BlockID].TimeStamp) + ".bin"
-			HL.Log ("GUI.py: Chat will be saved to: " + self.Conversation.File, 'D', 2)
-		
 		### Construct Prompt for sending... (Required by the API)
-		Prompt = {"role": "user", "content": self.ChatWindow.Messages[Index].MessageData.Message}
+		Prompt = {"role": "user", "content": self.ChatWindow.Messages[PromptIndex].MessageData.Message}
 		
 		### Generate context... (Optional for the API, but AI doesn't "remember" previous prompt/answer without it...)
 		Context = None
+		ContextIDs = None
 		Messages = []
 		Messages.append (Rules)
 		Messages.append (Prompt)
@@ -631,13 +600,18 @@ class GUI:
 					HL.Log ("GUI.py: Message included!", 'D', 2)
 					if Context == None:
 						Context = []
+						ContextIDs = []
 					Context.insert (0, ContextMessage)
+					ContextIDs.insert (0, self.ChatWindow.Messages[Index].MessageData.BlockID)
 					ContextCount -= 1
 					HL.Log ("GUI.py: Remaining ContextCount: " + str (ContextCount), 'D', 2)
 				else:
 					HL.Log ("GUI.py: Message too large!", 'D', 2)
 					HL.Log ("GUI.py: Loop exitted at Index: " + str (Index) + ", i: " + str (i), 'D', 2)
 					break
+		
+		if ContextIDs != None:
+			self.ChatWindow.Messages[PromptIndex].MessageData.Context = ContextIDs
 		HL.Log ("GUI.py: FinalContextCount: " + str (self.S.MaxContextMsg - ContextCount), 'D', 2)
 		
 		# Context token estimation
@@ -655,6 +629,10 @@ class GUI:
 			for Item in Context:
 				print (Item)
 		HL.Log ("GUI.py: Estimated context tokens: " + str (T.TokenCount_Context) + " --> Estimated total tokens: " + str (T.TokenCount_Total), 'D', 2)
+		
+		### Record promt into a new block.
+		self.Conversation.NewBlock (self.ChatWindow.Messages[PromptIndex].MessageData.Dump (self.K.UserKey))
+		self.ChatWindow.Messages[PromptIndex].MessageData.BlockID = self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID
 		
 		### Send message then display and recod response to new block
 		Response = Communicate.AskTheAI ("OpenAI", "gpt-3.5-turbo", Rules, Context, Prompt) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
@@ -685,6 +663,35 @@ class GUI:
 			else:
 				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 0
 		self.ChatWindow.SendButton.configure (state = tk.NORMAL)
+		
+		### Generate subject if not set by the user.
+		BlockID = 0
+		FirstMsg = self.ChatWindow.Messages[PromptIndex].MessageData
+		for ID in range (0, len (self.Conversation.Blocks)): # This should not be a long loop unless you've edited the rules 100s of thousands of times before even starting the conversation.
+			FirstMsg = Data ()
+			FirstMsg.Parse (self.K.UserKey, self.Conversation.Blocks[ID].Data, ID)
+			if FirstMsg.DataType == "Message":
+				BlockID = ID
+				break
+		if self.Conversation.Subject == "Enter the subject here... (optional)" or self.Conversation.Subject == "":
+			SubjectDetectionRules = {"role": "system", "content": "Your task is to determine what is the subject of messages in a very short sentences. Never return more then one sentence."}
+			Context = [{"role": "user", "content": "What is the subject of the following message?\n\nMessage:\nGive me a sentence for testing my application."}, {"role": "assistant", "content": "Sentence request for testing."}] # This works with Content = None, but more reliable with an example. Otherwise it may start with "Subject: ", or "The subject of this..." which is not desirable.
+			Prompt = {"role": "user", "content": "What is the subject of the following message?\n\nMessage:\n" + FirstMsg.Message}
+			HL.Log ("GUI.py: Unspecified Subject! --> Asking the AI to summarize it in a sentence.", 'I', 2)
+			Response = Communicate.AskTheAI ("OpenAI", "gpt-3.5-turbo", SubjectDetectionRules, Context, Prompt) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
+			if isinstance (Response, openai.openai_object.OpenAIObject): # AI Respose
+				self.Conversation.Subject = Response['choices'][0]['message']['content']
+				HL.Log ("GUI.py: AI said the subject is: " + self.Conversation.Subject, "I", 2)
+				self.Conversation.Subject += " (Created at " + self.Conversation.Blocks[BlockID].TimeStamp + ")"
+				self.ChatWindow.SubjectLabel.config (text = self.Conversation.Subject)
+		elif BlockID == len (self.Conversation.Blocks): # Otherwise it may add the timestamp multiple times...
+			self.Conversation.Subject += " (Created at " + self.Conversation.Blocks[BlockID].TimeStamp + ")"
+			self.ChatWindow.SubjectLabel.config (text = self.Conversation.Subject)
+		
+		### Generate filename if does not exist...
+		if self.Conversation.File == None:
+			self.Conversation.File = "Conversations/" + re.sub ('[\W_]+', '_', self.Conversation.Blocks[BlockID].TimeStamp) + ".bin"
+			HL.Log ("GUI.py: Chat will be saved to: " + self.Conversation.File, 'D', 2)
 	
 	
 	
@@ -692,6 +699,40 @@ class GUI:
 		for Index in range (0, len (self.ChatWindow.Messages)):
 			if self.ChatWindow.Messages[Index].Include.get () == True:
 				self.ChatWindow.Messages[Index].Include.set (False)
+	
+	
+	
+	def ExportAction (self):
+		if len (self.Conversation.Blocks) > 0:
+			### Create Export dir and filename...
+			if not os.path.exists ("Export"):
+				os.makedirs ("Export")
+			BlockID = 0
+			FirstMsg = Data (DataType = "Dummy")
+			for ID in range (0, len (self.Conversation.Blocks)): # This should not be a long loop unless you've edited the rules 100s of thousands of times before even starting the conversation.
+				FirstMsg = Data ()
+				FirstMsg.Parse (self.K.UserKey, self.Conversation.Blocks[ID].Data, ID)
+				if FirstMsg.DataType == "Message":
+					BlockID = ID
+					break
+			JSONFile = "Export/" + re.sub ('[\W_]+', '_', self.Conversation.Blocks[BlockID].TimeStamp) + ".json"
+			HL.Log ("GUI.py: Exporting coversatuib to: " + JSONFile, 'I', 2)
+			
+			### Export
+			Extract = {"Subject": self.Conversation.Subject, "CreationTime": self.Conversation.Blocks[0].TimeStamp, "Blocks": []}
+			for Block in self.Conversation.Blocks:
+				MessageData = Data ()
+				MessageData.Parse (self.K.UserKey, Block.Data, Block.BlockID, Block.Rating)
+				BlockData = {"DataVersion": MessageData.DataVersion, "DataType": MessageData.DataType, "Title": MessageData.Title, "Rules": MessageData.Rules, "Context": MessageData.Context, "Name": MessageData.Name, "Message": MessageData.Message}
+				Extract["Blocks"].append ({"ID": Block.BlockID, "TimeStamp": Block.TimeStamp, "Data": BlockData, "Rating": Block.Rating})
+			
+			### Display
+			if Args.verbose or Args.debug:
+				print (json.dumps (Extract, indent = 4))
+			
+			### Save to file
+			with open (JSONFile, 'w') as File:
+				json.dump (Extract, File, indent = 4)
 	
 	
 	
@@ -712,8 +753,10 @@ class GUI:
 			Text = "(Subject will be generated from prompt.)"
 		self.ChatWindow.SubjectLabel = None
 		self.ChatWindow.SubjectLabel = Window.Label (self.ChatWindow.SubjectFrame, 0, 1, "EW", Text, Theme.BGColor, Anchor = "w", Width = None)
+		self.ChatWindow.ExportButton = None
+		self.ChatWindow.ExportButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 2, "E", "Export", self.ExportAction, Width = 5, Height = 1)
 		self.ChatWindow.RulesButton = None
-		self.ChatWindow.RulesButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 2, "E", "Edit Rules", self.ChatRulesAction, Width = 10, Height = 1, PadX = 0)
+		self.ChatWindow.RulesButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 3, "E", "Edit Rules", self.ChatRulesAction, Width = 8, Height = 1, PadX = 0)
 		
 		### Conversation canvas (This should be populated after the UI is fully constructed, otherwise autoscroll does not seem to scroll all the way to the bottom when continuig conversation...)
 		self.ChatWindow.Canvas = None

@@ -7,8 +7,9 @@ import os
 
 # At first start it may not exist...
 if not os.path.exists ("Conversations"):
-    os.makedirs ("Conversations")
+	os.makedirs ("Conversations")
 
+# Comment this if you want the log to be appended. (It can get large pretty soon due to multiple debug messages / prompt...)
 if os.path.exists ("Log.log"):
 	os.remove ("Log.log")
 
