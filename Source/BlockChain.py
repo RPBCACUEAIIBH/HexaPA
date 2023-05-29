@@ -12,6 +12,7 @@ class BlockChain:
 	LogTrace = 0xFFFF
 	File = None
 	Subject = None # Subject of the conversation.
+	CreationTime = None # Time when the conversation started.
 	LatestRules = None # BlockID containing latest rules. (No need to load here. Found anyway while iterating to display / export the conversation.)
 	Rules = None # Data object containing latest rules. (Latest rules should be loaded during displaying / exporting the conversation.)
 	
@@ -27,8 +28,10 @@ class BlockChain:
 	def Clear (self, Trace = None):
 		self.Blocks = []
 		self.File = None
+		self.Subject = None
+		self.CreationTime = None
 		self.LatestRules = None
-		Rules = None
+		self.Rules = None
 	
 	
 	
@@ -62,6 +65,7 @@ class BlockChain:
 				Chain = pickle.load (F)
 				self.Blocks = Chain.Blocks
 				self.Subject = Chain.Subject
+				self.CreationTime = Chain.CreationTime
 				# Validate here
 				HL.Log ("BlockChain.py: Blocks loaded!", 'D', self.LogTrace)
 		else:

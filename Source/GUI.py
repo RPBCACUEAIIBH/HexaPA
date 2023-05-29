@@ -333,9 +333,9 @@ class GUI:
 			self.MainWindow.ConversationList[Index].ContinueButton = Window.Button (self.MainWindow.ConversationList[Index].Base, 0, 0, "E", "Delete", self.DeleteChat, [Index], 5)
 			self.MainWindow.ConversationList[Index].Label = None
 			if Index % 2 == 0:
-				self.MainWindow.ConversationList[Index].Label = Window.Label (self.MainWindow.ConversationList[Index].Base, 0, 1, "EW", X.Subject, Theme.ResponseBG, Anchor = "w")
+				self.MainWindow.ConversationList[Index].Label = Window.Label (self.MainWindow.ConversationList[Index].Base, 0, 1, "EW", X.Subject + " (Created at " + X.CreationTime + ")", Theme.ResponseBG, Anchor = "w")
 			else:
-				self.MainWindow.ConversationList[Index].Label = Window.Label (self.MainWindow.ConversationList[Index].Base, 0, 1, "EW", X.Subject, Theme.PromptBG, Anchor = "w")
+				self.MainWindow.ConversationList[Index].Label = Window.Label (self.MainWindow.ConversationList[Index].Base, 0, 1, "EW", X.Subject + " (Created at " + X.CreationTime + ")", Theme.PromptBG, Anchor = "w")
 			self.MainWindow.ConversationList[Index].ContinueButton = None
 			self.MainWindow.ConversationList[Index].ContinueButton = Window.Button (self.MainWindow.ConversationList[Index].Base, 0, 2, "E", "Continue conversation", self.ContinueExistingChat, [Index], 18)
 		
@@ -673,6 +673,7 @@ class GUI:
 			if FirstMsg.DataType == "Message":
 				BlockID = ID
 				break
+		self.Conversation.CreationTime = self.Conversation.Blocks[BlockID].TimeStamp
 		if self.Conversation.Subject == "Enter the subject here... (optional)" or self.Conversation.Subject == "":
 			SubjectDetectionRules = {"role": "system", "content": "Your task is to determine what is the subject of messages in a very short sentences. Never return more then one sentence."}
 			Context = [{"role": "user", "content": "What is the subject of the following message?\n\nMessage:\nGive me a sentence for testing my application."}, {"role": "assistant", "content": "Sentence request for testing."}] # This works with Content = None, but more reliable with an example. Otherwise it may start with "Subject: ", or "The subject of this..." which is not desirable.
@@ -682,15 +683,13 @@ class GUI:
 			if isinstance (Response, openai.openai_object.OpenAIObject): # AI Respose
 				self.Conversation.Subject = Response['choices'][0]['message']['content']
 				HL.Log ("GUI.py: AI said the subject is: " + self.Conversation.Subject, "I", 2)
-				self.Conversation.Subject += " (Created at " + self.Conversation.Blocks[BlockID].TimeStamp + ")"
-				self.ChatWindow.SubjectLabel.config (text = self.Conversation.Subject)
-		elif BlockID == len (self.Conversation.Blocks): # Otherwise it may add the timestamp multiple times...
-			self.Conversation.Subject += " (Created at " + self.Conversation.Blocks[BlockID].TimeStamp + ")"
-			self.ChatWindow.SubjectLabel.config (text = self.Conversation.Subject)
+				self.ChatWindow.SubjectLabel.config (text = self.Conversation.Subject + " (Created at " + self.Conversation.CreationTime + ")")
+		elif PromptIndex == BlockID:
+			self.ChatWindow.SubjectLabel.config (text = self.Conversation.Subject + " (Created at " + self.Conversation.CreationTime + ")")
 		
 		### Generate filename if does not exist...
 		if self.Conversation.File == None:
-			self.Conversation.File = "Conversations/" + re.sub ('[\W_]+', '_', self.Conversation.Blocks[BlockID].TimeStamp) + ".bin"
+			self.Conversation.File = "Conversations/" + re.sub ('[\W_]+', '_', self.Conversation.CreationTime) + ".bin"
 			HL.Log ("GUI.py: Chat will be saved to: " + self.Conversation.File, 'D', 2)
 	
 	
@@ -707,15 +706,7 @@ class GUI:
 			### Create Export dir and filename...
 			if not os.path.exists ("Export"):
 				os.makedirs ("Export")
-			BlockID = 0
-			FirstMsg = Data (DataType = "Dummy")
-			for ID in range (0, len (self.Conversation.Blocks)): # This should not be a long loop unless you've edited the rules 100s of thousands of times before even starting the conversation.
-				FirstMsg = Data ()
-				FirstMsg.Parse (self.K.UserKey, self.Conversation.Blocks[ID].Data, ID)
-				if FirstMsg.DataType == "Message":
-					BlockID = ID
-					break
-			JSONFile = "Export/" + re.sub ('[\W_]+', '_', self.Conversation.Blocks[BlockID].TimeStamp) + ".json"
+			JSONFile = "Export/" + re.sub ('[\W_]+', '_', self.Conversation.CreationTime) + ".json"
 			HL.Log ("GUI.py: Exporting conversation to: " + JSONFile, 'I', 2)
 			
 			### Export
@@ -748,7 +739,10 @@ class GUI:
 		self.ChatWindow.BackButton = None
 		self.ChatWindow.BackButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 0, "W", "Back", self.ChatBackAction, Height = 1, PadX = 0)
 		if self.Conversation.Subject != "Enter the subject here... (optional)" and self.Conversation.Subject != "":
-			Text = self.Conversation.Subject
+			if self.Conversation.CreationTime != None:
+				Text = self.Conversation.Subject + " (Created at " + self.Conversation.CreationTime + ")"
+			else:
+				Text = self.Conversation.Subject
 		else:
 			Text = "(Subject will be generated from prompt.)"
 		self.ChatWindow.SubjectLabel = None
