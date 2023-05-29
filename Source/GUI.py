@@ -716,7 +716,7 @@ class GUI:
 					BlockID = ID
 					break
 			JSONFile = "Export/" + re.sub ('[\W_]+', '_', self.Conversation.Blocks[BlockID].TimeStamp) + ".json"
-			HL.Log ("GUI.py: Exporting coversatuib to: " + JSONFile, 'I', 2)
+			HL.Log ("GUI.py: Exporting conversation to: " + JSONFile, 'I', 2)
 			
 			### Export
 			Extract = {"Subject": self.Conversation.Subject, "CreationTime": self.Conversation.Blocks[0].TimeStamp, "Blocks": []}
