@@ -124,8 +124,6 @@ class GUI:
 		self.PasswordRequestWindow.TitleFrame (self.PasswordRequestWindow.Base, 0, 0, Command = self.Link_OSRC)
 		
 		### Password Frame
-		# Due credits turned to corporate joke when I went to check if the logo is allowd to be used, after I wrote this section... ;)
-		# I worked on this code, so I'm not removing it, and not beging for written permission either! Update the ToS! :P
 		self.PasswordRequestWindow.PasswordFrame = None
 		self.PasswordRequestWindow.PasswordFrame = Window.Frame (self.PasswordRequestWindow.Base, Row = 1, Column = 0, Sticky = "N")
 		self.PasswordRequestWindow.PasswordFrame.columnconfigure (0, weight = 1)
@@ -419,20 +417,48 @@ class GUI:
 	
 	
 	def ChatCountTokensAction (self):
+		# Update ratings for all previous messages. (The user may have changed it...)
+		for Index in range (0, len (self.ChatWindow.Messages)):
+			if self.ChatWindow.Messages[Index].Exclude.get () == True:
+				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = -1
+			elif self.ChatWindow.Messages[Index].Include.get () == True:
+				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 1
+			else:
+				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 0
+		
+		### Construct Rules for sending... (Required by the API)
 		if self.Conversation.LatestRules != None:
-			MessageData = Data (self.Conversation.LatestRules, [], Message = self.ChatWindow.UserInputTextBox.get ("1.0", "end").strip ())
 			Rules = {"role": "system", "content": self.Conversation.Rules.Rules}
 		else:
-			MessageData = Data ("", [], Message = self.ChatWindow.UserInputTextBox.get ("1.0", "end").strip ())
 			Rules = {"role": "system", "content": ""}
-		Context = None
+		
+		### Construct Prompt for sending... (Required by the API)
 		Prompt = {"role": "user", "content": self.ChatWindow.UserInputTextBox.get ("1.0", "end").strip ()}
-		Messages = [Rules]
+		
+		### Generate context... (Optional for the API, but AI doesn't "remember" previous prompt/answer without it...)
+		Context = None
+		ContextIDs = None
+		Messages = []
+		Messages.append (Rules)
+		Messages.append (Prompt)
+		
+		# Calculate remaining tokens for context
+		T = Tokenizer ("OpenAI", "gpt-3.5-turbo", Messages)
+		MaxContextTokens = self.S.MaxTokens - T.TokenCount_Rules - T.TokenCount_Prompt
+		HL.Log ("GUI.py: MaxTokens allowed: " + str (self.S.MaxTokens) + ", Estimated rules tokens: " + str (T.TokenCount_Rules) + ", Estimated prompt tokens: " + str (T.TokenCount_Prompt) + " --> MaxContextTokens " + str (MaxContextTokens) + ", MaxContextMessages: " + str (self.S.MaxContextMsg), 'D', 2)
+		
+		# Generate Context
+		ContextIDs, Context = Commands.GenerateContext (self.K.UserKey, self.S, self.Conversation.Blocks, MaxContextTokens)
+		
+		# Context token estimation
+		Messages = []
+		Messages.append (Rules)
 		if Context != None:
 			Messages.extend (Context)
 		Messages.append (Prompt)
 		T = Tokenizer ("OpenAI", "gpt-3.5-turbo", Messages)
 		self.ChatWindow.StatsLabel.config (text = "Token estimations:   Rules: " + str (T.TokenCount_Rules) + "   Context: " + str (T.TokenCount_Context) + "   Prompt: " + str (T.TokenCount_Prompt) + "   Total to send: " + str (T.TokenCount_Total))
+		self.Window.update ()
 	
 	
 	
@@ -523,6 +549,15 @@ class GUI:
 	def ChatSendAction (self):
 		self.ChatWindow.SendButton.configure (state = tk.DISABLED)
 		
+		# Update ratings for all previous messages. (The user may have changed it...)
+		for Index in range (0, len (self.ChatWindow.Messages)):
+			if self.ChatWindow.Messages[Index].Exclude.get () == True:
+				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = -1
+			elif self.ChatWindow.Messages[Index].Include.get () == True:
+				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 1
+			else:
+				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 0
+		
 		### Display Prompt
 		Text = self.ChatWindow.UserInputTextBox.get ("1.0", "end").strip ()
 		self.ChatWindow.UserInputTextBox.delete ('1.0', "end") # For some odd reason if this is after the DisplayMessage call, the User input may not get immediately cleared...
@@ -545,74 +580,17 @@ class GUI:
 		Messages = []
 		Messages.append (Rules)
 		Messages.append (Prompt)
+		
+		# Calculate remaining tokens for context
 		T = Tokenizer ("OpenAI", "gpt-3.5-turbo", Messages)
 		MaxContextTokens = self.S.MaxTokens - T.TokenCount_Rules - T.TokenCount_Prompt
 		HL.Log ("GUI.py: MaxTokens allowed: " + str (self.S.MaxTokens) + ", Estimated rules tokens: " + str (T.TokenCount_Rules) + ", Estimated prompt tokens: " + str (T.TokenCount_Prompt) + " --> MaxContextTokens " + str (MaxContextTokens) + ", MaxContextMessages: " + str (self.S.MaxContextMsg), 'D', 2)
-		# Create list of messages...
-		Offset = 1 # The last context message is len (self.ChatWindow.Messages) - 2 since len (self.ChatWindow.Messages) - 1 is the prompt...
-		ContextCount = 0
-		HL.Log ("GUI.py: Exclusion compensation loop...", 'D', 2)
-		for i in range (1, len (self.ChatWindow.Messages)): # This loop compensates for excluded messages, otherwise if you exclude messages, less then max allowd messages are even considered...
-			Index = len (self.ChatWindow.Messages) - i
-			if Index < 0: # New conversation -> less then max allowed messages...
-				HL.Log ("GUI.py: Loop exitted at Index: " + str (Index) + ", i: " + str (i) + ", FinalContextCount: " + str (ContextCount), 'D', 2)
-				break
-			HL.Log ("GUI.py: Message Exclude: " + str (self.ChatWindow.Messages[Index].Exclude.get ()) + ", Include: " + str (self.ChatWindow.Messages[Index].Include.get ()), 'D', 2)
-			if self.ChatWindow.Messages[Index].Exclude.get () == True: # Exclude message from context...
-				HL.Log ("GUI.py: Excluded message.", 'D', 2)
-				if self.S.MaxContextMsg + Offset < len (self.ChatWindow.Messages) - 1:
-					HL.Log ("GUI.py: Increasing offset because: self.S.MaxContextMsg + Offset < len (self.ChatWindow.Messages) - 1  --> New offset: " + str (Offset + 1), 'D', 2)
-					Offset += 1
-				continue
-			elif self.S.AutoContext == False and self.ChatWindow.Messages[Index].Include.get () == False:
-				HL.Log ("GUI.py: Neither excluded nor included message in manual inclusion mode.", 'D', 2)
-				if self.S.MaxContextMsg + Offset < len (self.ChatWindow.Messages) - 1:
-					HL.Log ("GUI.py: Increasing offset because: self.S.MaxContextMsg + Offset < len (self.ChatWindow.Messages) - 1  --> New offset: " + str (Offset + 1), 'D', 2)
-					Offset += 1
-				continue
-			else:
-				ContextCount += 1
-				HL.Log ("GUI.py: ContextCount: " + str (ContextCount), 'D', 2)
-				if ContextCount == self.S.MaxContextMsg:
-					HL.Log ("GUI.py: Loop exitted at Index: " + str (Index) + ", i: " + str (i) + ", FinalContextCount: " + str (ContextCount), 'D', 2)
-					break
-		HL.Log ("GUI.py: Context generation loop...", 'D', 2)
-		for i in range (2, self.S.MaxContextMsg + Offset + 2): # +1 because range counts from min to i < max and the prompt is excluded
-			Index = len (self.ChatWindow.Messages) - i
-			if Index < 0: # New conversation -> less then max allowed messages...
-				HL.Log ("GUI.py: Loop exitted at Index: " + str (Index) + ", i: " + str (i), 'D', 2)
-				break
-			HL.Log ("GUI.py: Message Exclude: " + str (self.ChatWindow.Messages[Index].Exclude.get ()) + ", Include: " + str (self.ChatWindow.Messages[Index].Include.get ()), 'D', 2)
-			if self.ChatWindow.Messages[Index].Exclude.get () == True: # Excluded message
-				HL.Log ("GUI.py: Excluded message.", 'D', 2)
-				continue
-			elif self.S.AutoContext == False and self.ChatWindow.Messages[Index].Include.get () == False: # Neither excluded nor included message in manual inclusion mode.
-				HL.Log ("GUI.py: Neither excluded nor included message in manual inclusion mode.", 'D', 2)
-				continue
-			else: # Included message
-				HL.Log ("GUI.py: Considering message at index: " + str (Index), 'D', 2)
-				if self.ChatWindow.Messages[Index].MessageData.Name == self.S.UserName:
-					ContextMessage = {"role": "user", "content": self.ChatWindow.Messages[Index].MessageData.Message}
-				else:
-					ContextMessage = {"role": "assistant", "content": self.ChatWindow.Messages[Index].MessageData.Message}
-				HL.Log ("GUI.py: Message: " + str (ContextMessage), 'D', 2)
-				if MaxContextTokens >= Tokenizer.Count ("OpenAI", "gpt-3.5-turbo", "role: " + ContextMessage["role"] + ", content: " + ContextMessage["content"]):
-					HL.Log ("GUI.py: Message included!", 'D', 2)
-					if Context == None:
-						Context = []
-						ContextIDs = []
-					Context.insert (0, ContextMessage)
-					ContextIDs.insert (0, self.ChatWindow.Messages[Index].MessageData.BlockID)
-					ContextCount -= 1
-					HL.Log ("GUI.py: Remaining ContextCount: " + str (ContextCount), 'D', 2)
-				else:
-					HL.Log ("GUI.py: Message too large!", 'D', 2)
-					HL.Log ("GUI.py: Loop exitted at Index: " + str (Index) + ", i: " + str (i), 'D', 2)
-					break
+		
+		# Generate Context
+		ContextIDs, Context = Commands.GenerateContext (self.K.UserKey, self.S, self.Conversation.Blocks, MaxContextTokens)
 		
 		if ContextIDs != None:
 			self.ChatWindow.Messages[PromptIndex].MessageData.Context = ContextIDs
-		HL.Log ("GUI.py: FinalContextCount: " + str (self.S.MaxContextMsg - ContextCount), 'D', 2)
 		
 		# Context token estimation
 		Messages = []
@@ -653,8 +631,9 @@ class GUI:
 			self.ChatWindow.Messages[Index - 1].Exclude.set (True)
 			self.ChatWindow.UserInputTextBox.insert ('end', self.ChatWindow.Messages[Index - 1].MessageData.Message) # Allow the user to try again by simply clicking send again.
 		self.ChatWindow.Messages[Index].MessageData.BlockID = self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID
+		self.ChatWindow.SendButton.configure (state = tk.NORMAL)
 		
-		# Update ratings block ratings. (If the gui is closed by the user anything in self.ChatWindow will be lost, self.Conversation survives and gets saved before exit unless the SIGKILL is given.)
+		# Update ratings again... (If the gui is closed by the user anything in self.ChatWindow will be lost, self.Conversation survives and gets saved before exit unless the SIGKILL is given.)
 		for Index in range (0, len (self.ChatWindow.Messages)):
 			if self.ChatWindow.Messages[Index].Exclude.get () == True:
 				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = -1
@@ -662,7 +641,6 @@ class GUI:
 				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 1
 			else:
 				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 0
-		self.ChatWindow.SendButton.configure (state = tk.NORMAL)
 		
 		### Generate subject if not set by the user.
 		BlockID = 0

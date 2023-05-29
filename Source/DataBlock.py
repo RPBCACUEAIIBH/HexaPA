@@ -29,6 +29,8 @@ class DataBlock:
 	
 	
 	def Sign (self):
+		if self.Rating == None: # While it is only used for "Message" type data, without a rating value the block may not be loaded properly on next start...
+			self.Rating = 0
 		self.Signature = 0
 		Chararray1 = tuple ("000")
 		Run = True
