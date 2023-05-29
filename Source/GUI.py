@@ -7,7 +7,6 @@ import webbrowser
 import tkinter as tk
 import datetime
 import platform
-import json
 
 from HexaLibPython import HexaLog as HL
 from Source.Window import *
@@ -19,6 +18,7 @@ from Source.BlockChain import *
 from Source.Data import *
 from Source.Settings import *
 from Source.Options import *
+from Source.Commands import *
 
 
 class GUI:
@@ -702,28 +702,7 @@ class GUI:
 	
 	
 	def ExportAction (self):
-		if len (self.Conversation.Blocks) > 0:
-			### Create Export dir and filename...
-			if not os.path.exists ("Export"):
-				os.makedirs ("Export")
-			JSONFile = "Export/" + re.sub ('[\W_]+', '_', self.Conversation.CreationTime) + ".json"
-			HL.Log ("GUI.py: Exporting conversation to: " + JSONFile, 'I', 2)
-			
-			### Export
-			Extract = {"Subject": self.Conversation.Subject, "CreationTime": self.Conversation.Blocks[0].TimeStamp, "Blocks": []}
-			for Block in self.Conversation.Blocks:
-				MessageData = Data ()
-				MessageData.Parse (self.K.UserKey, Block.Data, Block.BlockID, Block.Rating)
-				BlockData = {"DataVersion": MessageData.DataVersion, "DataType": MessageData.DataType, "Title": MessageData.Title, "Rules": MessageData.Rules, "Context": MessageData.Context, "Name": MessageData.Name, "Message": MessageData.Message}
-				Extract["Blocks"].append ({"ID": Block.BlockID, "TimeStamp": Block.TimeStamp, "Data": BlockData, "Rating": Block.Rating})
-			
-			### Display
-			if Args.verbose or Args.debug:
-				print (json.dumps (Extract, indent = 4))
-			
-			### Save to file
-			with open (JSONFile, 'w') as File:
-				json.dump (Extract, File, indent = 4)
+		Commands.Export (self.K.UserKey, self.Conversation)
 	
 	
 	

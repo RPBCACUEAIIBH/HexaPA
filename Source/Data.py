@@ -34,7 +34,7 @@ class Data:
 	
 	
 	
-	def Parse (self, Key, EncryptedCompressedData, BlockID, Rating = 0): # Rating is not used for Rules block
+	def Parse (self, Key, EncryptedCompressedData, BlockID = None, Rating = 0): # Rating is not used for Rules block, BolockID not required for dump(s)
 		self.BlockID = BlockID
 		F = Fernet (Key)
 		Data = json.loads (gzip.decompress (F.decrypt (EncryptedCompressedData)).decode ())
@@ -78,5 +78,10 @@ class Data:
 	
 	def Dump (self, Key): # This should always dump data according to the latest version.
 		F = Fernet (Key)
-		Data = {"DataVersion": self.DataVersion, "DataType": self.DataType, "Title": self.Title, "Rules": self.Rules, "Context": self.Context, "Name": self.Name, "Message": self.Message}
+		Data = self.DumpDict ()
 		return F.encrypt (gzip.compress (json.dumps (Data).encode ()))
+	
+	
+	
+	def DumpDict (self):
+		return {"DataVersion": self.DataVersion, "DataType": self.DataType, "Title": self.Title, "Rules": self.Rules, "Context": self.Context, "Name": self.Name, "Message": self.Message}

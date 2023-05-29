@@ -2,6 +2,8 @@
 
 import hashlib
 
+from Source.Data import *
+
 
 class DataBlock:
 	Rating = None # This is a block specific variable, it subject to change and thus must not influence block validity.
@@ -39,3 +41,10 @@ class DataBlock:
 					break
 			if Run:
 				self.Signature += 1
+	
+	
+	
+	def DumpDict (self, Key):
+		MessageData = Data ()
+		MessageData.Parse (Key, self.Data)
+		return {"ID": self.BlockID, "TimeStamp": self.TimeStamp, "Data": MessageData.DumpDict (), "Rating": self.Rating}
