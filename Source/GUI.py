@@ -418,13 +418,14 @@ class GUI:
 	
 	def ChatCountTokensAction (self):
 		# Update ratings for all previous messages. (The user may have changed it...)
-		for Index in range (0, len (self.ChatWindow.Messages)):
-			if self.ChatWindow.Messages[Index].Exclude.get () == True:
-				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = -1
-			elif self.ChatWindow.Messages[Index].Include.get () == True:
-				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 1
-			else:
-				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 0
+		if len (self.ChatWindow.Messages) > 1:
+			for Index in range (0, len (self.ChatWindow.Messages)):
+				if self.ChatWindow.Messages[Index].Exclude.get () == True:
+					self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = -1
+				elif self.ChatWindow.Messages[Index].Include.get () == True:
+					self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 1
+				else:
+					self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 0
 		
 		### Construct Rules for sending... (Required by the API)
 		if self.Conversation.LatestRules != None:
@@ -550,13 +551,14 @@ class GUI:
 		self.ChatWindow.SendButton.configure (state = tk.DISABLED)
 		
 		# Update ratings for all previous messages. (The user may have changed it...)
-		for Index in range (0, len (self.ChatWindow.Messages)):
-			if self.ChatWindow.Messages[Index].Exclude.get () == True:
-				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = -1
-			elif self.ChatWindow.Messages[Index].Include.get () == True:
-				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 1
-			else:
-				self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 0
+		if len (self.ChatWindow.Messages) > 1:
+			for Index in range (0, len (self.ChatWindow.Messages)):
+				if self.ChatWindow.Messages[Index].Exclude.get () == True:
+					self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = -1
+				elif self.ChatWindow.Messages[Index].Include.get () == True:
+					self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 1
+				else:
+					self.Conversation.Blocks[self.ChatWindow.Messages[Index].MessageData.BlockID].Rating = 0
 		
 		### Display Prompt
 		Text = self.ChatWindow.UserInputTextBox.get ("1.0", "end").strip ()
