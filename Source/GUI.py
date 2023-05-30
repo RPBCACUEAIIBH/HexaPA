@@ -481,16 +481,7 @@ class GUI:
 				for Widget in self.ChatWindow.CanvasInnerFrame.winfo_children ():
 				        Widget.destroy ()
 		Index = len (self.ChatWindow.Messages) # A new object is being added to the list so the index should be it's former length...
-		if UserName == "HexaPA": # This makes the background color difference between prompt and answer frames...
-			self.ChatWindow.Messages.append (Window (self.ChatWindow.CanvasInnerFrame, BGColor = Theme.ResponseBG, Packed = True))
-			self.ChatWindow.Messages[Index].Base.columnconfigure (0, weight = 1)
-			self.ChatWindow.Messages[Index].Base.rowconfigure (1, weight = 1)
-			self.ChatWindow.Messages[Index].AuthorFrame = None
-			self.ChatWindow.Messages[Index].AuthorFrame = Window.Frame (self.ChatWindow.Messages[Index].Base, Theme.ResponseBG, 0, 0, 0, 0, "EW")
-			self.ChatWindow.Messages[Index].AuthorFrame.columnconfigure (0, weight = 1)
-			self.ChatWindow.Messages[Index].Author = None
-			self.ChatWindow.Messages[Index].Author = Window.Label (self.ChatWindow.Messages[Index].AuthorFrame, 0, 0, "EW", UserName, Theme.ResponseBG, Anchor = "w", Width = None)
-		else:
+		if UserName == self.S.UserName: # This makes the background color difference between prompt and answer frames...
 			self.ChatWindow.Messages.append (Window (self.ChatWindow.CanvasInnerFrame, BGColor = Theme.PromptBG, Packed = True))
 			self.ChatWindow.Messages[Index].Base.columnconfigure (0, weight = 1)
 			self.ChatWindow.Messages[Index].Base.rowconfigure (1, weight = 1)
@@ -498,7 +489,24 @@ class GUI:
 			self.ChatWindow.Messages[Index].AuthorFrame = Window.Frame (self.ChatWindow.Messages[Index].Base, Theme.PromptBG, 0, 0, 0, 0, "EW")
 			self.ChatWindow.Messages[Index].AuthorFrame.columnconfigure (0, weight = 1)
 			self.ChatWindow.Messages[Index].Author = None
-			self.ChatWindow.Messages[Index].Author = Window.Label (self.ChatWindow.Messages[Index].AuthorFrame, 0, 0, "EW", UserName, Theme.PromptBG, Anchor = "w", Width = None)
+			self.ChatWindow.Messages[Index].Author = Window.Label (self.ChatWindow.Messages[Index].AuthorFrame, 0, 0, "EW", UserName, Theme.PromptBG, Anchor = "w", Width = None, PadY = Theme.PadY + 3)
+			self.ChatWindow.Messages[Index].ButtonFrame = None
+			self.ChatWindow.Messages[Index].ButtonFrame = Window.Frame (self.ChatWindow.Messages[Index].AuthorFrame, Theme.PromptBG, 0, 1, Sticky = "NSE")
+			self.ChatWindow.Messages[Index].ButtonFrame.rowconfigure (0, weight = 1)
+			self.ChatWindow.Messages[Index].RephraseButton = None
+			self.ChatWindow.Messages[Index].RephraseButton = Window.Button (self.ChatWindow.Messages[Index].ButtonFrame, 0, 0, "NS", "Rephrase", lambda: (self.ChatWindow.UserInputTextBox.insert ('end', self.ChatWindow.Messages[Index].TextBox.get ("1.0", "end").strip ()), setattr (self.ChatWindow.Messages[Index].MessageData, 'Rating', -1), self.ChatWindow.Messages[Index].Exclude.set (True), setattr (self.ChatWindow.Messages[Index + 1].MessageData, 'Rating', -1), self.ChatWindow.Messages[Index + 1].Exclude.set (True), self.ChatWindow.UserInputTextBox.focus ()), Width = 6, PadX = 0, PadY = 0)
+		else:
+			self.ChatWindow.Messages.append (Window (self.ChatWindow.CanvasInnerFrame, BGColor = Theme.ResponseBG, Packed = True))
+			self.ChatWindow.Messages[Index].Base.columnconfigure (0, weight = 1)
+			self.ChatWindow.Messages[Index].Base.rowconfigure (1, weight = 1)
+			self.ChatWindow.Messages[Index].AuthorFrame = None
+			self.ChatWindow.Messages[Index].AuthorFrame = Window.Frame (self.ChatWindow.Messages[Index].Base, Theme.ResponseBG, 0, 0, 0, 0, "EW")
+			self.ChatWindow.Messages[Index].AuthorFrame.columnconfigure (0, weight = 1)
+			self.ChatWindow.Messages[Index].Author = None
+			self.ChatWindow.Messages[Index].Author = Window.Label (self.ChatWindow.Messages[Index].AuthorFrame, 0, 0, "EW", UserName, Theme.ResponseBG, Anchor = "w", Width = None, PadY = Theme.PadY + 3)
+			self.ChatWindow.Messages[Index].ButtonFrame = None
+			self.ChatWindow.Messages[Index].ButtonFrame = Window.Frame (self.ChatWindow.Messages[Index].AuthorFrame, Theme.ResponseBG, 0, 1, Sticky = "NSE")
+			self.ChatWindow.Messages[Index].ButtonFrame.rowconfigure (0, weight = 1)
 		self.ChatWindow.Messages[Index].MessageData = None
 		if MsgData != None:
 			self.ChatWindow.Messages[Index].MessageData = MsgData # Existing message.
@@ -506,13 +514,13 @@ class GUI:
 			self.ChatWindow.Messages[Index].MessageData = Data (Name = UserName, Message = Content) # New message.
 		self.ChatWindow.Messages[Index].Wrap = tk.BooleanVar (value = 1)
 		self.ChatWindow.Messages[Index].WrapButton = None
-		self.ChatWindow.Messages[Index].WrapButton = Window.CheckButton (self.ChatWindow.Messages[Index].AuthorFrame, 0, 1, "E", "Wrap", self.ChatWindow.Messages[Index].Wrap, lambda: self.ChatWindow.Messages[Index].TextBox.configure (wrap = ("word" if self.ChatWindow.Messages[Index].Wrap.get () else "none")))
+		self.ChatWindow.Messages[Index].WrapButton = Window.CheckButton (self.ChatWindow.Messages[Index].ButtonFrame, 0, 1, "NS", "Wrap", self.ChatWindow.Messages[Index].Wrap, lambda: self.ChatWindow.Messages[Index].TextBox.configure (wrap = ("word" if self.ChatWindow.Messages[Index].Wrap.get () else "none")), PadY = 0)
 		self.ChatWindow.Messages[Index].Exclude = tk.BooleanVar (value = 0)
 		self.ChatWindow.Messages[Index].Include = tk.BooleanVar (value = 0)
 		self.ChatWindow.Messages[Index].ExcludeButton = None
-		self.ChatWindow.Messages[Index].ExcludeButton = Window.CheckButton (self.ChatWindow.Messages[Index].AuthorFrame, 0, 2, "E", "Exclude", self.ChatWindow.Messages[Index].Exclude, lambda: self.ChatWindow.Messages[Index].Include.set (False), Width = 7)
+		self.ChatWindow.Messages[Index].ExcludeButton = Window.CheckButton (self.ChatWindow.Messages[Index].ButtonFrame, 0, 2, "NS", "Exclude", self.ChatWindow.Messages[Index].Exclude, lambda: self.ChatWindow.Messages[Index].Include.set (False), Width = 7, PadX = 0, PadY = 0)
 		self.ChatWindow.Messages[Index].IncludeButton = None
-		self.ChatWindow.Messages[Index].IncludeButton = Window.CheckButton (self.ChatWindow.Messages[Index].AuthorFrame, 0, 3, "E", "Inlcude", self.ChatWindow.Messages[Index].Include, lambda: self.ChatWindow.Messages[Index].Exclude.set (False), Width = 7)
+		self.ChatWindow.Messages[Index].IncludeButton = Window.CheckButton (self.ChatWindow.Messages[Index].ButtonFrame, 0, 3, "NS", "Inlcude", self.ChatWindow.Messages[Index].Include, lambda: self.ChatWindow.Messages[Index].Exclude.set (False), Width = 6, PadY = 0)
 		if self.ChatWindow.Messages[Index].MessageData.Rating > 0:
 			self.ChatWindow.Messages[Index].Include.set (True)
 		elif self.ChatWindow.Messages[Index].MessageData.Rating < 0:
@@ -709,7 +717,7 @@ class GUI:
 		self.ChatWindow.ExportButton = None
 		self.ChatWindow.ExportButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 2, "E", "Export", self.ExportAction, Width = 5, Height = 1)
 		self.ChatWindow.RulesButton = None
-		self.ChatWindow.RulesButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 3, "E", "Edit Rules", self.ChatRulesAction, Width = 8, Height = 1, PadX = 0)
+		self.ChatWindow.RulesButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 3, "E", "Rules", self.ChatRulesAction, Width = 5, Height = 1, PadX = 0)
 		
 		### Conversation canvas (This should be populated after the UI is fully constructed, otherwise autoscroll does not seem to scroll all the way to the bottom when continuig conversation...)
 		self.ChatWindow.Canvas = None
@@ -730,7 +738,7 @@ class GUI:
 		self.ChatWindow.UserInputTextBox.bind ("<FocusOut>", lambda event: self.ChatWindow.UserInputTextBox.config (height = 3)) # click away event that shriks the field.
 		self.ChatWindow.UserInputButtons = None
 		self.ChatWindow.UserInputButtons = Window.Frame (self.ChatWindow.UserInputFrame, Row = 1, Column = 0, PadX = 0, PadY = 0, Sticky = "EW")
-		self.ChatWindow.UserInputButtons.columnconfigure (1, weight = 1)
+		self.ChatWindow.UserInputButtons.columnconfigure (2, weight = 1)
 		self.ChatWindow.AutoContext = tk.BooleanVar (value = 1)
 		self.S.AutoContext = True # Auto context should be on by default, it's only for special cases like asking the AI something totally unrelated, or if you want it to work with specific context within the conversation...
 		self.ChatWindow.AutoContextButton = None

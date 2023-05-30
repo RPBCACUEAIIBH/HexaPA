@@ -115,7 +115,7 @@ class Window:
 	
 	
 	@staticmethod
-	def CheckButton (Parent, Row, Column, Sticky, Text, BoolVar, Command, Width = 5, Height = 1, PadX = Theme.PadX, PadY = Theme.PadY): # This is smaler then other buttons, make sure to set sticky to "SN"
+	def CheckButton (Parent, Row, Column, Sticky, Text, BoolVar, Command, Width = 5, Height = 1, PadX = Theme.PadX, PadY = Theme.PadY): # This is smaler then other buttons, make sure to set sticky to "SN", and PadY to 0 to make it the same height as other buttons.
 		CheckButton = tk.Checkbutton (Parent, text = Text, font = (Theme.Font, Theme.TextSize), anchor = "w", variable = BoolVar, command = Command, bg = Theme.ButtonBG, fg = Theme.ButtonText, activebackground = Theme.ActiveButtonBG, activeforeground = Theme.ActiveButtonText, borderwidth = 0, highlightthickness = 0, disabledforeground = Theme.SmallText, relief = "flat", indicatoron = True, selectcolor = Theme.PromptBG, width = Width, height = Height)
 		CheckButton.grid (row = Row, column = Column, padx = PadX, pady = PadY, sticky = Sticky)
 		return CheckButton
