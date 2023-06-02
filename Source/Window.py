@@ -93,7 +93,7 @@ class Window:
 	
 	@staticmethod
 	def Label (Parent, Row, Column, Sticky, Text, BGColor, TextColor = Theme.Text, TextSize = Theme.TextSize, Anchor = None, Width = 30, PadX = Theme.PadX, PadY = Theme.PadY, Height = None):
-		Label = tk.Label (Parent, text = Text, font = (Theme.Font, TextSize), anchor = Anchor, bg = BGColor, fg = TextColor, width = Width, height = Height)
+		Label = tk.Label (Parent, text = Text, font = (Theme.Font, TextSize), anchor = Anchor, justify = 'left', bg = BGColor, fg = TextColor, width = Width, height = Height)
 		Label.grid (row = Row, column = Column, padx = PadX, pady = PadY, sticky = Sticky)
 		return Label
 	
@@ -109,36 +109,51 @@ class Window:
 	
 	
 	@staticmethod
-	def Button (Parent, Row, Column, Sticky, Text, Command, ArgList = None, Width = 4, Height = 1, PadX = Theme.PadX, PadY = Theme.PadY):
+	def Button (Parent, Row, Column, Sticky, Text, Command, ArgList = None, Width = 4, Height = 1, PadX = Theme.PadX, PadY = Theme.PadY, TooltipLabel = None, TooltipText = ""):
 		if ArgList == None:
 			Button = tk.Button (Parent, text = Text, font = (Theme.Font, Theme.TextSize), command = Command, bg = Theme.ButtonBG, fg = Theme.ButtonText, activebackground = Theme.ActiveButtonBG, activeforeground = Theme.ActiveButtonText, borderwidth = 0, highlightthickness = 0, relief = "flat", width = Width, height = Height)
 		else:
 			Button = tk.Button (Parent, text = Text, font = (Theme.Font, Theme.TextSize), command = lambda: Command (ArgList), bg = Theme.ButtonBG, fg = Theme.ButtonText, activebackground = Theme.ActiveButtonBG, activeforeground = Theme.ActiveButtonText, borderwidth = 0, highlightthickness = 0, relief = "flat", width = Width, height = Height)
 		Button.configure (disabledforeground = Theme.SmallText) # This one only seems to works when configured...
 		Button.grid (row = Row, column = Column, padx = PadX, pady = PadY, sticky = Sticky)
+		if TooltipLabel != None:
+			Button.Tooltip = None
+			Button.Tooltip = Tooltip (TooltipLabel, TooltipText)
+			Button.bind ("<Enter>", Button.Tooltip.ShowTooltip)
+			Button.bind ("<Leave>", Button.Tooltip.HideTooltip)
 		return Button
 	
 	
 	
 	@staticmethod
-	def CheckButton (Parent, Row, Column, Sticky, Text, BoolVar, Command, Width = 5, Height = 1, PadX = Theme.PadX, PadY = Theme.PadY): # This is smaler then other buttons, make sure to set sticky to "SN", and PadY to 0 to make it the same height as other buttons.
+	def CheckButton (Parent, Row, Column, Sticky, Text, BoolVar, Command, Width = 5, Height = 1, PadX = Theme.PadX, PadY = Theme.PadY, TooltipLabel = None, TooltipText = ""): # This is smaler then other buttons, make sure to set sticky to "SN", and PadY to 0 to make it the same height as other buttons.
 		CheckButton = tk.Checkbutton (Parent, text = Text, font = (Theme.Font, Theme.TextSize), anchor = "w", variable = BoolVar, command = Command, bg = Theme.ButtonBG, fg = Theme.ButtonText, activebackground = Theme.ActiveButtonBG, activeforeground = Theme.ActiveButtonText, borderwidth = 0, highlightthickness = 0, disabledforeground = Theme.SmallText, relief = "flat", indicatoron = True, selectcolor = Theme.PromptBG, width = Width, height = Height)
 		CheckButton.grid (row = Row, column = Column, padx = PadX, pady = PadY, sticky = Sticky)
+		if TooltipLabel != None:
+			CheckButton.Tooltip = None
+			CheckButton.Tooltip = Tooltip (TooltipLabel, TooltipText)
+			CheckButton.bind ("<Enter>", CheckButton.Tooltip.ShowTooltip)
+			CheckButton.bind ("<Leave>", CheckButton.Tooltip.HideTooltip)
 		return CheckButton
 	
 	
 	
-	def RadioButton (Parent, Row, Column, Sticky, Text, StrVar, Value, Default = False, Width = 5, Height = 1, PadX = Theme.PadX, PadY = Theme.PadY):
-		Radio = tk.Radiobutton (Parent, text = Text, font = (Theme.Font, Theme.TextSize), anchor = "w", variable = StrVar, value = Value, bg = Theme.ButtonBG, fg = Theme.ButtonText, activebackground = Theme.ActiveButtonBG, activeforeground = Theme.ActiveButtonText, borderwidth = 0, highlightthickness = 0, disabledforeground = Theme.SmallText, relief = "flat", width = Width, height = Height)
-		Radio.grid (row = Row, column = Column, padx = PadX, pady = PadY, sticky = Sticky)
+	def RadioButton (Parent, Row, Column, Sticky, Text, StrVar, Value, Default = False, Width = 5, Height = 1, PadX = Theme.PadX, PadY = Theme.PadY, TooltipLabel = None, TooltipText = ""):
+		RadioButton = tk.Radiobutton (Parent, text = Text, font = (Theme.Font, Theme.TextSize), anchor = "w", variable = StrVar, value = Value, bg = Theme.ButtonBG, fg = Theme.ButtonText, activebackground = Theme.ActiveButtonBG, activeforeground = Theme.ActiveButtonText, borderwidth = 0, highlightthickness = 0, disabledforeground = Theme.SmallText, relief = "flat", width = Width, height = Height)
+		RadioButton.grid (row = Row, column = Column, padx = PadX, pady = PadY, sticky = Sticky)
 		if Default == True:
 			StrVar.set (Value)
-		return Radio
+		if TooltipLabel != None:
+			RadioButton.Tooltip = None
+			RadioButton.Tooltip = Tooltip (TooltipLabel, TooltipText)
+			RadioButton.bind ("<Enter>", RadioButton.Tooltip.ShowTooltip)
+			RadioButton.bind ("<Leave>", RadioButton.Tooltip.HideTooltip)
+		return RadioButton
 	
 	
 	
 	@staticmethod
-	def TextBox (Parent, Row, Column, PadX = Theme.PadX, PadY = Theme.PadY, Sticky = None, Height = 3, Text = None, Wrap = "word"):
+	def TextBox (Parent, Row, Column, PadX = Theme.PadX, PadY = Theme.PadY, Sticky = None, Height = 3, Text = None, Wrap = "word", TooltipLabel = None, TooltipText = ""):
 		Frame = tk.Frame (Parent, bg = Theme.BGColor)
 		Frame.grid (row = Row, column = Column, padx = PadX, pady = PadY, sticky = Sticky)
 		Frame.columnconfigure (0, weight = 1)
@@ -154,6 +169,11 @@ class Window:
 			TextBox.insert ('end', Text)
 		ScrollX.config (command = TextBox.xview)
 		ScrollY.config (command = TextBox.yview)
+		if TooltipLabel != None:
+			TextBox.Tooltip = None
+			TextBox.Tooltip = Tooltip (TooltipLabel, TooltipText)
+			TextBox.bind ("<Enter>", TextBox.Tooltip.ShowTooltip)
+			TextBox.bind ("<Leave>", TextBox.Tooltip.HideTooltip)
 		return Frame, ScrollX, ScrollY, TextBox
 	
 	

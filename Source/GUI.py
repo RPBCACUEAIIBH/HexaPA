@@ -300,10 +300,10 @@ class GUI:
 		
 		### Tooltip label
 		self.MainWindow.TooltipFrame = None
-		self.MainWindow.TooltipFrame = Window.Frame (self.MainWindow.Base, Row = 3, Column = 0, Sticky = "EW")
+		self.MainWindow.TooltipFrame = Window.Frame (self.MainWindow.Base, Row = 3, Column = 0, Sticky = "EW", PadX = 0, PadY = 0)
 		self.MainWindow.TooltipFrame.columnconfigure (0, weight = 1)
 		self.MainWindow.TooltipLabel = None
-		self.MainWindow.TooltipLabel = Window.Label (self.MainWindow.TooltipFrame, 0, 0, "EW", "TooltipLabel", Theme.BGColor, Theme.SmallText, Theme.SmallTextSize, Anchor = "w", Height = 1) # Hight must be limited otherwise the label may push other widgets out from beneath the mouse, and it oscillates between Tooltip and no Tooltip...
+		self.MainWindow.TooltipLabel = Window.Label (self.MainWindow.TooltipFrame, 0, 0, "NSEW", "", Theme.BGColor, Theme.SmallText, Theme.SmallTextSize, Anchor = "w", PadX = 0, PadY = 0, Height = 2) # Hight must be limited otherwise the label may push other widgets out from beneath the mouse, and it oscillates between Tooltip and no Tooltip...
 		
 		### Conversation list
 		self.MainWindow.Canvas = None
@@ -314,11 +314,11 @@ class GUI:
 		self.MainWindow.NewChatFrame = None
 		self.MainWindow.NewChatFrame = Window.Frame (self.MainWindow.CanvasInnerFrame, Theme.PromptBG, Packed = True)
 		self.MainWindow.Subject = None
-		self.MainWindow.Subject = Window.Entry (self.MainWindow.NewChatFrame, 0, 0, "EW", Text = "Enter the subject here... (optional)", TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Optional but if no subject is given, it will be generated from the first prompt, just like ChatGPT does. (Using extra ~100 tokens (for instructions) + first message worth of tokens at your expense. :P)")
+		self.MainWindow.Subject = Window.Entry (self.MainWindow.NewChatFrame, 0, 0, "EW", Text = "Enter the subject here... (optional)", TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Optional but if no subject is given, it will be generated from the first prompt, just like ChatGPT does. (Using extra ~100 tokens for instructions + first message worth of tokens at your expense. :P)\nHotkey/combination: [Space]")
 		self.MainWindow.Subject.bind ("<FocusIn>", lambda event: self.MainWindow.Subject.delete (0, 'end')) # click event that clears the field.
 		self.MainWindow.Subject.bind ("<FocusOut>", lambda event: self.MainWindow.Subject.insert (0, "Enter the subject here... (optional)")) # click event that clears the field.
 		self.MainWindow.NewChatButton = None
-		self.MainWindow.NewChatButton = Window.Button (self.MainWindow.NewChatFrame, 0, 1, "E", "Start new conversation", self.CreateNewChat, Width = 18)
+		self.MainWindow.NewChatButton = Window.Button (self.MainWindow.NewChatFrame, 0, 1, "E", "Start new conversation", self.CreateNewChat, Width = 18, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Start new conversation (Only saved after first prompt.)\nHotkey/combination: [Enter]")
 		
 		## Existing conversations
 		self.MainWindow.ConversationList = []
@@ -363,7 +363,7 @@ class GUI:
 		self.MainWindow.MaxContextMsgLabel = None
 		self.MainWindow.MaxContextMsgLabel = Window.Label (self.MainWindow.MaxContextMsgFrame, 0, 0, "W", "Max Context Messages (Even numbers recommended.):", Theme.BGColor, Anchor = "w", Width = None)
 		self.MainWindow.MaxContextMsgEntry = None
-		self.MainWindow.MaxContextMsgEntry = Window.Entry (self.MainWindow.MaxContextMsgFrame, 0, 1, "EW", Text = str (self.S.MaxContextMsg), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "The last n messages included as context, influences how far back the AI \"remembers\" the conversation. (Even numbers recommended.)")
+		self.MainWindow.MaxContextMsgEntry = Window.Entry (self.MainWindow.MaxContextMsgFrame, 0, 1, "EW", Text = str (self.S.MaxContextMsg), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "The last n messages included as context, influences how far back the AI \"remembers\" the conversation.\n(Even numbers recommended.)")
 		
 		## Max Tokens
 		self.MainWindow.MaxTokensFrame = None
@@ -372,7 +372,7 @@ class GUI:
 		self.MainWindow.MaxTokensLabel = None
 		self.MainWindow.MaxTokensLabel = Window.Label (self.MainWindow.MaxTokensFrame, 0, 0, "W", "Max Tokens (Rules + Context + Prompt combined):", Theme.BGColor, Anchor = "w", Width = None)
 		self.MainWindow.MaxTokensEntry = None
-		self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits input tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages. (GPT-3.5 accepts max 2048 tokens. Good idea to not exceed 1900 - 2000 tokens to account for the inaccuracy of the token counter.)")
+		self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits input tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages.\n(GPT-3.5 accepts max 2048 tokens. Good idea to not exceed 1900 - 2000 tokens to account for the inaccuracy of the token counter.)")
 		
 		### Key bindings
 		self.SpaceBinding = self.Window.bind ('<space>', lambda event: self.MainWindow.Subject.focus ())
@@ -468,7 +468,8 @@ class GUI:
 			Messages.extend (Context)
 		Messages.append (Prompt)
 		T = Tokenizer ("OpenAI", "gpt-3.5-turbo", Messages)
-		self.ChatWindow.StatsLabel.config (text = "Token estimations:   Rules: " + str (T.TokenCount_Rules) + "   Context: " + str (T.TokenCount_Context) + "   Prompt: " + str (T.TokenCount_Prompt) + "   Total to send: " + str (T.TokenCount_Total))
+		self.ChatWindow.StatsLabel.config (text = "Token estimations:   Total to send: " + str (T.TokenCount_Total) + "\nRules: " + str (T.TokenCount_Rules) + "   Context: " + str (T.TokenCount_Context) + "   Prompt: " + str (T.TokenCount_Prompt))
+		self.ChatWindow.StatsLabel.lift ()
 		self.Window.update ()
 	
 	
@@ -504,7 +505,7 @@ class GUI:
 			self.ChatWindow.Messages[Index].ButtonFrame = Window.Frame (self.ChatWindow.Messages[Index].AuthorFrame, Theme.PromptBG, 0, 1, Sticky = "NSE")
 			self.ChatWindow.Messages[Index].ButtonFrame.rowconfigure (0, weight = 1)
 			self.ChatWindow.Messages[Index].RephraseButton = None
-			self.ChatWindow.Messages[Index].RephraseButton = Window.Button (self.ChatWindow.Messages[Index].ButtonFrame, 0, 0, "NS", "Rephrase", lambda: (self.ChatWindow.UserInputTextBox.insert ('end', self.ChatWindow.Messages[Index].TextBox.get ("1.0", "end").strip ()), setattr (self.ChatWindow.Messages[Index].MessageData, 'Rating', -1), self.ChatWindow.Messages[Index].Exclude.set (True), setattr (self.ChatWindow.Messages[Index + 1].MessageData, 'Rating', -1), self.ChatWindow.Messages[Index + 1].Exclude.set (True), self.ChatWindow.UserInputTextBox.focus ()), Width = 6, PadX = 0, PadY = 0)
+			self.ChatWindow.Messages[Index].RephraseButton = Window.Button (self.ChatWindow.Messages[Index].ButtonFrame, 0, 0, "NS", "Rephrase", lambda: (self.ChatWindow.UserInputTextBox.insert ('end', self.ChatWindow.Messages[Index].TextBox.get ("1.0", "end").strip ()), setattr (self.ChatWindow.Messages[Index].MessageData, 'Rating', -1), self.ChatWindow.Messages[Index].Exclude.set (True), setattr (self.ChatWindow.Messages[Index + 1].MessageData, 'Rating', -1), self.ChatWindow.Messages[Index + 1].Exclude.set (True), self.ChatWindow.UserInputTextBox.focus ()), Width = 6, PadX = 0, PadY = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Shortcut for [Ctrl] + [C], [Ctrl] + [V] and exclusion of previous prompt and response.\nKind of a \"regenerate response\" button with optioal editing before sending.")
 		else:
 			self.ChatWindow.Messages.append (Window (self.ChatWindow.CanvasInnerFrame, BGColor = Theme.ResponseBG, Packed = True))
 			self.ChatWindow.Messages[Index].Base.columnconfigure (0, weight = 1)
@@ -524,13 +525,13 @@ class GUI:
 			self.ChatWindow.Messages[Index].MessageData = Data (Name = UserName, Message = Content) # New message.
 		self.ChatWindow.Messages[Index].Wrap = tk.BooleanVar (value = 1)
 		self.ChatWindow.Messages[Index].WrapButton = None
-		self.ChatWindow.Messages[Index].WrapButton = Window.CheckButton (self.ChatWindow.Messages[Index].ButtonFrame, 0, 1, "NS", "Wrap", self.ChatWindow.Messages[Index].Wrap, lambda: self.ChatWindow.Messages[Index].TextBox.configure (wrap = ("word" if self.ChatWindow.Messages[Index].Wrap.get () else "none")), PadY = 0)
+		self.ChatWindow.Messages[Index].WrapButton = Window.CheckButton (self.ChatWindow.Messages[Index].ButtonFrame, 0, 1, "NS", "Wrap", self.ChatWindow.Messages[Index].Wrap, lambda: self.ChatWindow.Messages[Index].TextBox.configure (wrap = ("word" if self.ChatWindow.Messages[Index].Wrap.get () else "none")), PadY = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Wrap text in the textbox.\n(Wrapping long text is usually desirable, wrapping code may not be. Hance the up-down and left-right scroll bars.)")
 		self.ChatWindow.Messages[Index].Exclude = tk.BooleanVar (value = 0)
 		self.ChatWindow.Messages[Index].Include = tk.BooleanVar (value = 0)
 		self.ChatWindow.Messages[Index].ExcludeButton = None
-		self.ChatWindow.Messages[Index].ExcludeButton = Window.CheckButton (self.ChatWindow.Messages[Index].ButtonFrame, 0, 2, "NS", "Exclude", self.ChatWindow.Messages[Index].Exclude, lambda: self.ChatWindow.Messages[Index].Include.set (False), Width = 7, PadX = 0, PadY = 0)
+		self.ChatWindow.Messages[Index].ExcludeButton = Window.CheckButton (self.ChatWindow.Messages[Index].ButtonFrame, 0, 2, "NS", "Exclude", self.ChatWindow.Messages[Index].Exclude, lambda: self.ChatWindow.Messages[Index].Include.set (False), Width = 7, PadX = 0, PadY = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Exclude this message from context.\n(If exclude is checked, the AI will not take it into consideration. It never existed...)")
 		self.ChatWindow.Messages[Index].IncludeButton = None
-		self.ChatWindow.Messages[Index].IncludeButton = Window.CheckButton (self.ChatWindow.Messages[Index].ButtonFrame, 0, 3, "NS", "Inlcude", self.ChatWindow.Messages[Index].Include, lambda: self.ChatWindow.Messages[Index].Exclude.set (False), Width = 6, PadY = 0)
+		self.ChatWindow.Messages[Index].IncludeButton = Window.CheckButton (self.ChatWindow.Messages[Index].ButtonFrame, 0, 3, "NS", "Inlcude", self.ChatWindow.Messages[Index].Include, lambda: self.ChatWindow.Messages[Index].Exclude.set (False), Width = 6, PadY = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Include message even if the auto context management is disabled.")
 		if self.ChatWindow.Messages[Index].MessageData.Rating > 0:
 			self.ChatWindow.Messages[Index].Include.set (True)
 		elif self.ChatWindow.Messages[Index].MessageData.Rating < 0:
@@ -619,7 +620,7 @@ class GUI:
 			Messages.extend (Context)
 		Messages.append (Prompt)
 		T = Tokenizer ("OpenAI", "gpt-3.5-turbo", Messages)
-		self.ChatWindow.StatsLabel.config (text = "Token estimations:   Rules: " + str (T.TokenCount_Rules) + "   Context: " + str (T.TokenCount_Context) + "   Prompt: " + str (T.TokenCount_Prompt) + "   Total to send: " + str (T.TokenCount_Total))
+		self.ChatWindow.StatsLabel.config (text = "Token estimations:   Total to send: " + str (T.TokenCount_Total) + "\nRules: " + str (T.TokenCount_Rules) + "   Context: " + str (T.TokenCount_Context) + "   Prompt: " + str (T.TokenCount_Prompt))
 		self.Window.update ()
 		
 		# Debug
@@ -641,7 +642,7 @@ class GUI:
 			self.ChatWindow.StatsLabel.config (text = "An error occurred! The propmpt reloaded and first try excluded, you may try re-sending.")
 		else:
 			self.DisplayMessage ("HexaPA", Response['choices'][0]['message']['content'])
-			self.ChatWindow.StatsLabel.config (text = "Actual token usage:   Rules + Context + Prompt: " + str (Response['usage']['prompt_tokens']) + "   Response: " + str (Response['usage']['completion_tokens']) + "   Total: " + str (Response['usage']['total_tokens']))
+			self.ChatWindow.StatsLabel.config (text = "Actual token usage:   Total: " + str (Response['usage']['total_tokens']) + "\nRules + Context + Prompt: " + str (Response['usage']['prompt_tokens']) + "   Response: " + str (Response['usage']['completion_tokens']))
 		Index = len (self.ChatWindow.Messages) - 1
 		self.Conversation.NewBlock (self.ChatWindow.Messages[Index].MessageData.Dump (self.K.UserKey))
 		if ErrorText != None:
@@ -709,12 +710,19 @@ class GUI:
 		self.ChatWindow.Base.columnconfigure (0, weight = 1)
 		self.ChatWindow.Base.rowconfigure (1, weight = 1) # Set row 1 to expand not 0 here...
 		
+		### Tooltip label
+		self.ChatWindow.TooltipFrame = None
+		self.ChatWindow.TooltipFrame = Window.Frame (self.ChatWindow.Base, Row = 3, Column = 0, Sticky = "EW", PadX = 0, PadY = 0)
+		self.ChatWindow.TooltipFrame.columnconfigure (0, weight = 1)
+		self.ChatWindow.TooltipLabel = None
+		self.ChatWindow.TooltipLabel = Window.Label (self.ChatWindow.TooltipFrame, 0, 0, "NSEW", "", Theme.BGColor, Theme.SmallText, Theme.SmallTextSize, Anchor = "w", PadX = 0, PadY = 0, Height = 2) # Hight must be limited otherwise the label may push other widgets out from beneath the mouse, and it oscillates between Tooltip and no Tooltip...
+		
 		### Subject label and Back to Main / Edit Rules buttons
 		self.ChatWindow.SubjectFrame = None
 		self.ChatWindow.SubjectFrame = Window.Frame (self.ChatWindow.Base, Row = 0, Column = 0, PadX = 0, PadY = 0, Sticky = "NEW")
 		self.ChatWindow.SubjectFrame.columnconfigure (1, weight = 1)
 		self.ChatWindow.BackButton = None
-		self.ChatWindow.BackButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 0, "W", "Back", self.ChatBackAction, Height = 1, PadX = 0)
+		self.ChatWindow.BackButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 0, "W", "Back", self.ChatBackAction, Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Save and exit to main.\nHotkey/combination: [Esc]")
 		if self.Conversation.Subject != "Enter the subject here... (optional)" and self.Conversation.Subject != "":
 			if self.Conversation.CreationTime != None:
 				Text = self.Conversation.Subject + " (Created at " + self.Conversation.CreationTime + ")"
@@ -725,9 +733,9 @@ class GUI:
 		self.ChatWindow.SubjectLabel = None
 		self.ChatWindow.SubjectLabel = Window.Label (self.ChatWindow.SubjectFrame, 0, 1, "EW", Text, Theme.BGColor, Anchor = "w", Width = None)
 		self.ChatWindow.ExportButton = None
-		self.ChatWindow.ExportButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 2, "E", "Export", self.ExportAction, Width = 5, Height = 1)
+		self.ChatWindow.ExportButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 2, "E", "Export", self.ExportAction, Width = 5, Height = 1, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Export conversation data.\n(JSON only! ...for now. Recommended to export important data before upgrading HexaPA to new version for now... It's in early alpha, it may not be stable.)")
 		self.ChatWindow.RulesButton = None
-		self.ChatWindow.RulesButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 3, "E", "Rules", self.ChatRulesAction, Width = 5, Height = 1, PadX = 0)
+		self.ChatWindow.RulesButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 3, "E", "Rules", self.ChatRulesAction, Width = 5, Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Edit rules... (Experimental... The AI will use this as context but treats it more as recommendations. Examples help, old context may contain bad example to a radical change in rules, so use the exclude checkboxes or disable auto context for a while...)\nHotkey/combination: [Ctrl] + [R]")
 		
 		### Conversation canvas (This should be populated after the UI is fully constructed, otherwise autoscroll does not seem to scroll all the way to the bottom when continuig conversation...)
 		self.ChatWindow.Canvas = None
@@ -743,7 +751,7 @@ class GUI:
 		self.ChatWindow.UserInputScrollX = None
 		self.ChatWindow.UserInputScrollY = None
 		self.ChatWindow.UserInputTextBox = None
-		self.ChatWindow.UserInputTextBoxFrame, self.ChatWindow.UserInputScrollX, self.ChatWindow.UserInputScrollY, self.ChatWindow.UserInputTextBox = Window.TextBox (self.ChatWindow.UserInputFrame, 0, 0, PadX = 0, Sticky = "EW")
+		self.ChatWindow.UserInputTextBoxFrame, self.ChatWindow.UserInputScrollX, self.ChatWindow.UserInputScrollY, self.ChatWindow.UserInputTextBox = Window.TextBox (self.ChatWindow.UserInputFrame, 0, 0, PadX = 0, Sticky = "EW", TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Enter text...\nHotkey/combination: [Space]")
 		self.ChatWindow.UserInputTextBox.bind ("<FocusIn>", lambda event: self.ChatWindow.UserInputTextBox.config (height = 12)) # click event that enlarges the field.
 		self.ChatWindow.UserInputTextBox.bind ("<FocusOut>", lambda event: self.ChatWindow.UserInputTextBox.config (height = 3)) # click away event that shriks the field.
 		self.ChatWindow.UserInputButtons = None
@@ -752,22 +760,22 @@ class GUI:
 		self.ChatWindow.AutoContext = tk.BooleanVar (value = 1)
 		self.S.AutoContext = True # Auto context should be on by default, it's only for special cases like asking the AI something totally unrelated, or if you want it to work with specific context within the conversation...
 		self.ChatWindow.AutoContextButton = None
-		self.ChatWindow.AutoContextButton = Window.CheckButton (self.ChatWindow.UserInputButtons, 0, 0, "NSW", "Auto Context", self.ChatWindow.AutoContext, lambda: setattr (self.S, 'AutoContext', bool (self.ChatWindow.AutoContext.get ())), Width = 11, Height = 1, PadX = 0)
+		self.ChatWindow.AutoContextButton = Window.CheckButton (self.ChatWindow.UserInputButtons, 0, 0, "NSW", "Auto Context", self.ChatWindow.AutoContext, lambda: setattr (self.S, 'AutoContext', bool (self.ChatWindow.AutoContext.get ())), Width = 11, Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "When enabled all but explicitly excluded messages, when disabled only explicitly included messages will be sent as context.\n(Enabled by default. Limits apply! You can see what's getting sent in the terminal by running HexaPA with --verbose option.)")
 		self.ChatWindow.Uninclude = None
-		self.ChatWindow.Uninclude = Window.Button (self.ChatWindow.UserInputButtons, 0, 1, "NSW", "Uninclude All", self.UnincludeAction, Width = 10, Height = 1)
+		self.ChatWindow.Uninclude = Window.Button (self.ChatWindow.UserInputButtons, 0, 1, "NSW", "Uninclude All", self.UnincludeAction, Width = 10, Height = 1, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Shortcut for scrolling back an unchecking every \"Include\" checkmark for a new selection...")
 		self.ChatWindow.UserInputWrap = tk.BooleanVar (value = 1)
 		self.ChatWindow.SpacerFrame = None
 		self.ChatWindow.SpacerFrame = Window.Frame (self.ChatWindow.UserInputButtons, Row = 0, Column = 2, PadX = 0, PadY = 0, Sticky = "NSEW")
 		self.ChatWindow.WrapButton = None
-		self.ChatWindow.WrapButton = Window.CheckButton (self.ChatWindow.UserInputButtons, 0, 3, "NSE", "Wrap", self.ChatWindow.UserInputWrap, lambda: self.ChatWindow.UserInputTextBox.configure (wrap = ("word" if self.ChatWindow.UserInputWrap.get () else "none")), Height = 1, PadX = 0)
+		self.ChatWindow.WrapButton = Window.CheckButton (self.ChatWindow.UserInputButtons, 0, 3, "NSE", "Wrap", self.ChatWindow.UserInputWrap, lambda: self.ChatWindow.UserInputTextBox.configure (wrap = ("word" if self.ChatWindow.UserInputWrap.get () else "none")), Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Wrap/not wrap text in the prompt textbox.\n(Text is readable wrapped, however this may not be desirable for code.)")
 		self.ChatWindow.TokenButton = None
-		self.ChatWindow.TokenButton = Window.Button (self.ChatWindow.UserInputButtons, 0, 4, "NSE", "Count Tokens", self.ChatCountTokensAction, Width = 11, Height = 1)
+		self.ChatWindow.TokenButton = Window.Button (self.ChatWindow.UserInputButtons, 0, 4, "NSE", "Count Tokens", self.ChatCountTokensAction, Width = 11, Height = 1, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Estimate input tokens for rules, context, and prompt.\n(May not be entirely accurate...)")
 		self.ChatWindow.SendButton = None
-		self.ChatWindow.SendButton = Window.Button (self.ChatWindow.UserInputButtons, 0, 5, "NSE", "Send", lambda: self.ChatSendAction () if self.ChatWindow.UserInputTextBox.get ("1.0", "end-1c") else None, Height = 1, PadX = 0)
+		self.ChatWindow.SendButton = Window.Button (self.ChatWindow.UserInputButtons, 0, 5, "NSE", "Send", lambda: self.ChatSendAction () if self.ChatWindow.UserInputTextBox.get ("1.0", "end-1c") else None, Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Send text to the AI, and wait for response.\nHotkey/combination: [Ctrl] + [Enter]")
 		if Stats == None:
 			Stats = ""
 		self.ChatWindow.StatsLabel = None
-		self.ChatWindow.StatsLabel = Window.Label (self.ChatWindow.UserInputFrame, 2, 0, "W", Stats, Theme.BGColor, Theme.SmallText, Theme.SmallTextSize, "center", None, 0, 0)
+		self.ChatWindow.StatsLabel = Window.Label (self.ChatWindow.TooltipFrame, 0, 0, "NSEW", Stats, Theme.BGColor, Theme.Text, Theme.TextSize, "w", None, 0, 0, Height = 2)
 		
 		# Disable Send button in case the key was rejected
 		if Communicate.Disabled_OpenAI == True: # Key rejected or no key
@@ -777,7 +785,7 @@ class GUI:
 		try:
 			self.ChatWindow.BackButton.configure (state = tk.DISABLED)
 			if len (self.Conversation.Blocks) == 0: # Reminder, in case there is no content yet...
-				Text = "Remember:\n- Use [Enter] for new line (as in text editors), [Ctrl/Cmd]+[Enter] to send the message, [Ctrl/Cmd]+[R] to edit Rules. [Esc] to go back to main and [Alt]+[F4] to save and exit. (Not tested on mac!)\n- Clicking on a message enlarges it for easier reading.\n- Click on the input textbox or use [space] key in the chat and rules screen to focus on user input and start writing.\n- Your prompt + the rules you set + the context you select must be less then 2048 tokens!\n- The AI's answer may or may not fit into 2048 tokens, but it is limited to that by OpenAI!\n- It does not remember! The rules and context you send, is all it has to work with!\n- It does not think! It simply reacts to the given text, generating a response.\n- Do not ask for a numerical answer, the AI is simply terrible at math! It guesses the answer based on it's probablility, rather then calculating it. (The current model at least...)\n- Be concise, don't argue with the AI if it doesn't give you the answer you want, because you pay for your argument as well as the AI's apology, and it may still not give you an acceptable answer! Instead tweak what rules, context, and prompt you send next!\n- It does not feel, so praising or cursing it only cost you money! (Still it's a good to be polite, just to avoid developing bad habits...)\n\n- OpenAI's current policy (as of 5th of May 2023) says that they don't use data form API calls for training. (...but off course every company leaves a clause in it's ToS to change anything anytime, so I advise against feeding it any sensitive information or code! Treat it with an \"Anything you say can be used against you!\" attitude!)\n\n- HexaPA is free and open source software, if you find it helpful please donate at: www.osrc.rip/Support.html"
+				Text = "Remember:\n- Clicking on a message enlarges it for easier reading.\n- The prompt + rules + context must be less then 2048 tokens!\n- The AI's answer may or may not fit into 2048 tokens, but it is limited to that by OpenAI!\n- It does not have the ability to remember! The rules and context you send, is all it has to work with!\n- It does not think! It simply reacts to the given text, generating a response.\n- Do not ask for a numerical answer, the AI is simply terrible at math! It guesses the answer based on it's probablility, rather then calculating it. (The current model at least...)\n- Be concise, don't argue with the AI if it doesn't give you the answer you want, because you pay for your argument as well as the AI's apology, and it may still not give you an acceptable answer! Instead tweak what rules, context, and prompt you send next!\n- It does not feel, so praising or cursing it only cost you money! (Still it's a good idea to be polite, just to avoid developing bad habits...)\n\n- OpenAI's current policy (as of 5th of May 2023) says that they don't use data form API calls for training. (...but off course every company leaves a clause in it's ToS to change anything anytime, so I advise against feeding it any sensitive information or code! Treat it with an \"Anything you say can be used against you!\" attitude!)\n\n- HexaPA is free and open source software, if you find it helpful please donate at: www.osrc.rip/Support.html"
 				self.DisplayMessage ("Developer", Text)
 			else: # Conversation
 				if Args.renew_data: # Renew data...
