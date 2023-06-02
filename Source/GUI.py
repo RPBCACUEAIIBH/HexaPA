@@ -733,7 +733,7 @@ class GUI:
 		self.ChatWindow.SubjectLabel = None
 		self.ChatWindow.SubjectLabel = Window.Label (self.ChatWindow.SubjectFrame, 0, 1, "EW", Text, Theme.BGColor, Anchor = "w", Width = None)
 		self.ChatWindow.ExportButton = None
-		self.ChatWindow.ExportButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 2, "E", "Export", self.ExportAction, Width = 5, Height = 1, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Export conversation data.\n(JSON only! ...for now. Recommended to export important data before upgrading HexaPA to new version for now... It's in early alpha, it may not be stable.)")
+		self.ChatWindow.ExportButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 2, "E", "Export", self.ExportAction, Width = 5, Height = 1, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Export conversation data. (Unlike in ChatGPT you can see which rule block and which context blocks ware sent with any given prompt when you export the conversation, just in case you want to analyze it.)\n(JSON only! ...for now. Recommended to export important data before upgrading HexaPA to new version for now... It's in early alpha, it may not be stable.)")
 		self.ChatWindow.RulesButton = None
 		self.ChatWindow.RulesButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 3, "E", "Rules", self.ChatRulesAction, Width = 5, Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Edit rules... (Experimental... The AI will use this as context but treats it more as recommendations. Examples help, old context may contain bad example to a radical change in rules, so use the exclude checkboxes or disable auto context for a while...)\nHotkey/combination: [Ctrl] + [R]")
 		
@@ -892,23 +892,29 @@ class GUI:
 		self.RulesWindow.Base.columnconfigure (0, weight = 1)
 		self.RulesWindow.Base.rowconfigure (1, weight = 1) # Set row 1 to expand not 0 here...
 		
+		### Tooltip label
+		self.RulesWindow.TooltipFrame = None
+		self.RulesWindow.TooltipFrame = Window.Frame (self.RulesWindow.Base, Row = 3, Column = 0, Sticky = "EW", PadX = 0, PadY = 0)
+		self.RulesWindow.TooltipFrame.columnconfigure (0, weight = 1)
+		self.RulesWindow.TooltipLabel = None
+		self.RulesWindow.TooltipLabel = Window.Label (self.RulesWindow.TooltipFrame, 0, 0, "NSEW", "", Theme.BGColor, Theme.SmallText, Theme.SmallTextSize, Anchor = "w", PadX = 0, PadY = 0, Height = 2) # Hight must be limited otherwise the label may push other widgets out from beneath the mouse, and it oscillates between Tooltip and no Tooltip...
+		
 		### Subject label and Back to Main / Edit Rules buttons
 		self.RulesWindow.TitleFrame = None
 		self.RulesWindow.TitleFrame = Window.Frame (self.RulesWindow.Base, Row = 0, Column = 0, PadX = 0, PadY = 0, Sticky = "NEW")
 		self.RulesWindow.TitleFrame.columnconfigure (1, weight = 1)
 		self.RulesWindow.BackButton = None
-		self.RulesWindow.BackButton = Window.Button (self.RulesWindow.TitleFrame, 0, 0, "W", "Back", self.RulesBackAction, Height = 1, PadX = 0)
+		self.RulesWindow.BackButton = Window.Button (self.RulesWindow.TitleFrame, 0, 0, "W", "Back", self.RulesBackAction, Height = 1, PadX = 0, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Save rule block, and go back to chat screen. (If you change something and push the back button, a new rule block is created, the old one is preserved.)\nHotkey/combination: [Esc]")
 		Text = "Rules for the AI"
 		self.RulesWindow.SubjectLabel = None
 		self.RulesWindow.SubjectLabel = Window.Label (self.RulesWindow.TitleFrame, 0, 1, "EW", Text, Theme.BGColor, Anchor = "w", Width = None)
-		#self.RulesWindow.RulesButton = None
-		#self.RulesWindow.RulesButton = Window.Button (self.RulesWindow.TitleFrame, 0, 2, "E", "Edit Rules", self.PresetsAction, Width = 10, Height = 1, PadX = 0)
 		
 		
 		### UserInput
 		self.RulesWindow.RulesInputFrame = None
-		self.RulesWindow.RulesInputFrame = Window.Frame (self.RulesWindow.Base, Row = 2, Column = 0, PadX = 0, PadY = 0, Sticky = "EW")
+		self.RulesWindow.RulesInputFrame = Window.Frame (self.RulesWindow.Base, Row = 1, Column = 0, PadX = 0, PadY = 0, Sticky = "NSEW")
 		self.RulesWindow.RulesInputFrame.columnconfigure (0, weight = 1)
+		self.RulesWindow.RulesInputFrame.rowconfigure (0, weight = 1)
 		self.RulesWindow.RulesInputTextBoxFrame = None
 		self.RulesWindow.RulesInputScrollX = None
 		self.RulesWindow.RulesInputScrollY = None
@@ -917,25 +923,30 @@ class GUI:
 		self.RulesWindow.RuleData = Data (DataType = "Rules")
 		if self.Conversation.LatestRules == None: # If no rules have been defined yet.
 			HL.Log ("GUI.py: No Latest Rules ID: ", 'D', 2)
-			self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 0, 0, PadX = 0, Sticky = "EW", Height = 42, Text = self.RulesWindow.Reminder)
+			self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 0, 0, PadX = 0, Sticky = "NSEW", Text = self.RulesWindow.Reminder, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Rules entry box...\nHotkey/combination: [Space]")
 			self.RulesWindow.RulesInputTextBox.config (fg = Theme.SmallText)
 			self.RulesWindow.RulesInputTextBox.bind ("<FocusIn>", self.ClearReminder) # click event that clears the field.
 		else:
 			self.RulesWindow.RuleData.Parse (self.K.UserKey, self.Conversation.Blocks[self.Conversation.LatestRules].Data, self.Conversation.LatestRules)
 			HL.Log ("GUI.py: Latest Rules ID: " + str (self.Conversation.LatestRules), 'D', 2)
 			if self.RulesWindow.RuleData.DataType == "Rules" and self.RulesWindow.RuleData.Rules == "": # If the rules have been deleted.
-				self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 0, 0, PadX = 0, Sticky = "EW", Height = 42, Text = self.RulesWindow.Reminder)
+				self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 0, 0, PadX = 0, Sticky = "NSEW", Text = self.RulesWindow.Reminder, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Rules entry box...\nHotkey/combination: [Space]")
 				self.RulesWindow.RulesInputTextBox.config (fg = Theme.SmallText)
 				self.RulesWindow.RulesInputTextBox.bind ("<FocusIn>", self.ClearReminder) # click event that clears the field.
 			else:
-				self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 0, 0, PadX = 0, Sticky = "EW", Height = 42, Text = self.RulesWindow.RuleData.Rules)
+				self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 0, 0, PadX = 0, Sticky = "NSEW", Text = self.RulesWindow.RuleData.Rules, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Rules entry box...\nHotkey/combination: [Space]")
 		self.RulesWindow.RulesInputButtons = None
-		self.RulesWindow.RulesInputButtons = Window.Frame (self.RulesWindow.RulesInputFrame, Row = 1, Column = 0, PadX = 0, PadY = 0, Sticky = "E")
+		self.RulesWindow.RulesInputButtons = Window.Frame (self.RulesWindow.RulesInputFrame, Row = 1, Column = 0, PadX = 0, PadY = 0, Sticky = "EW")
+		self.RulesWindow.RulesInputButtons.columnconfigure (0, weight = 1)
+		self.RulesWindow.PresetTitle = None
+		self.RulesWindow.PresetTitle = Window.Entry (self.RulesWindow.RulesInputButtons, 0, 0, "EW", Text = "Preset Title (Only required for exporting...)", PadX = 0, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Preset title is also the file name...\n(Alpha-numeric characters, and spaces allowed!)")
+		self.RulesWindow.PresetTitle.bind ("<FocusIn>", lambda event: self.RulesWindow.PresetTitle.delete (0, 'end')) # click event that clears the field.
+		self.RulesWindow.ExportPresetButton = None
+		self.RulesWindow.ExportPresetButton = Window.Button (self.RulesWindow.RulesInputButtons, 0, 1, "NSE", "Export Preset", self.RulesExportPresetAction, Width = 11, Height = 1, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Exporting a set of rules allows you to use it as preset in other conversations.\n(By default a rule block only applies to a given conversation, when it is edited a new block is created, and the new one is used for further promts.)")
+		self.RulesWindow.ExportPresetButton.configure (state = tk.DISABLED)
 		self.RulesWindow.RulesInputWrap = tk.BooleanVar (value = 1)
 		self.RulesWindow.WrapButton = None
-		self.RulesWindow.WrapButton = Window.CheckButton (self.RulesWindow.RulesInputButtons, 0, 0, "NSE", "Wrap", self.RulesWindow.RulesInputWrap, lambda: self.RulesWindow.RulesInputTextBox.configure (wrap = ("word" if self.RulesWindow.RulesInputWrap.get () else "none")), Height = 1)
-		self.RulesWindow.ExportPresetButton = None
-		self.RulesWindow.ExportPresetButton = Window.Button (self.RulesWindow.RulesInputButtons, 0, 1, "NSE", "Export Preset", self.RulesExportPresetAction, Width = 11, Height = 1)
+		self.RulesWindow.WrapButton = Window.CheckButton (self.RulesWindow.RulesInputButtons, 0, 2, "NSE", "Wrap", self.RulesWindow.RulesInputWrap, lambda: self.RulesWindow.RulesInputTextBox.configure (wrap = ("word" if self.RulesWindow.RulesInputWrap.get () else "none")), PadX = 0, Height = 1, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Wrap text in the textbox...")
 		
 		# Key binding...
 		self.SpaceBinding = self.Window.bind ('<space>', lambda event: self.RulesWindow.RulesInputTextBox.focus ())
