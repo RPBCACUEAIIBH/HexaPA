@@ -7,6 +7,7 @@ import tkinter as tk
 
 from HexaLibPython import HexaLog as HL
 from Source.Theme import *
+from Source.Tooltip import *
 
 
 class Window:
@@ -65,11 +66,16 @@ class Window:
 	
 	
 	@staticmethod
-	def Entry (Parent, Row, Column, Sticky, Text = None, Width = 30, PadX = Theme.PadX, PadY = Theme.PadY, Show = "", Justify = "left"):
+	def Entry (Parent, Row, Column, Sticky, Text = None, Width = 30, PadX = Theme.PadX, PadY = Theme.PadY, Show = "", Justify = "left", TooltipLabel = None, TooltipText = ""):
 		Entry = tk.Entry (Parent, font = (Theme.Font, Theme.TextSize), justify = Justify, show = Show, width = Width, bg = Theme.UserInputBG, fg = Theme.UserInputText, insertbackground = Theme.CursorColor, borderwidth = 0, highlightbackground = Theme.BGColor, selectbackground = Theme.UserInputText, selectforeground = Theme.UserInputBG, disabledbackground = Theme.BGColor, disabledforeground = Theme.SmallText)
 		if Text != None:
 			Entry.insert (0, Text)
 		Entry.grid (row = Row, column = Column, padx = PadX, pady = PadY, sticky = Sticky)
+		if TooltipLabel != None:
+			Entry.Tooltip = None
+			Entry.Tooltip = Tooltip (TooltipLabel, TooltipText)
+			Entry.bind ("<Enter>", Entry.Tooltip.ShowTooltip)
+			Entry.bind ("<Leave>", Entry.Tooltip.HideTooltip)
 		return Entry
 		""" Color related arguments for tk.Entry() / tk.Text
 		bg: sets the background color of the widget.
@@ -86,8 +92,8 @@ class Window:
 	
 	
 	@staticmethod
-	def Label (Parent, Row, Column, Sticky, Text, BGColor, TextColor = Theme.Text, TextSize = Theme.TextSize, Anchor = None, Width = 30, PadX = Theme.PadX, PadY = Theme.PadY):
-		Label = tk.Label (Parent, text = Text, font = (Theme.Font, TextSize), anchor = Anchor, bg = BGColor, fg = TextColor, width = Width)
+	def Label (Parent, Row, Column, Sticky, Text, BGColor, TextColor = Theme.Text, TextSize = Theme.TextSize, Anchor = None, Width = 30, PadX = Theme.PadX, PadY = Theme.PadY, Height = None):
+		Label = tk.Label (Parent, text = Text, font = (Theme.Font, TextSize), anchor = Anchor, bg = BGColor, fg = TextColor, width = Width, height = Height)
 		Label.grid (row = Row, column = Column, padx = PadX, pady = PadY, sticky = Sticky)
 		return Label
 	

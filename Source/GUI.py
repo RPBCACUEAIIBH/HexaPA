@@ -19,6 +19,7 @@ from Source.Data import *
 from Source.Settings import *
 from Source.Options import *
 from Source.Commands import *
+from Source.Tooltip import *
 
 
 class GUI:
@@ -34,7 +35,7 @@ class GUI:
 		WinHeight = self.Window.winfo_screenheight()
 		PosX = self.Window.winfo_screenwidth() - WinWidth
 		PosY = 0
-		HL.Log ("GUI.py: WindowSize: " + str (WinWidth) + " x " + str (WinHeight) + "; PosX:" + str (PosX) + "; PosY" + str (PosY), 'D', 2)
+		HL.Log ("GUI.py: WindowSize: " + str (WinWidth) + " x " + str (WinHeight) + "; PosX: " + str (PosX) + "; PosY: " + str (PosY), 'D', 2)
 		self.Window.geometry (f"{WinWidth}x{WinHeight}+{PosX}+{PosY}")
 		self.Window.resizable (True, True)
 		self.Window.configure (bg = Theme.BGColor)
@@ -297,6 +298,13 @@ class GUI:
 		### Title
 		self.MainWindow.TitleFrame (self.MainWindow.Base, 0, 0, Command = self.Link_OSRC)
 		
+		### Tooltip label
+		self.MainWindow.TooltipFrame = None
+		self.MainWindow.TooltipFrame = Window.Frame (self.MainWindow.Base, Row = 3, Column = 0, Sticky = "EW")
+		self.MainWindow.TooltipFrame.columnconfigure (0, weight = 1)
+		self.MainWindow.TooltipLabel = None
+		self.MainWindow.TooltipLabel = Window.Label (self.MainWindow.TooltipFrame, 0, 0, "EW", "TooltipLabel", Theme.BGColor, Theme.SmallText, Theme.SmallTextSize, Anchor = "w", Height = 1) # Hight must be limited otherwise the label may push other widgets out from beneath the mouse, and it oscillates between Tooltip and no Tooltip...
+		
 		### Conversation list
 		self.MainWindow.Canvas = None
 		self.MainWindow.CanvasInnerFrame = None
@@ -306,7 +314,7 @@ class GUI:
 		self.MainWindow.NewChatFrame = None
 		self.MainWindow.NewChatFrame = Window.Frame (self.MainWindow.CanvasInnerFrame, Theme.PromptBG, Packed = True)
 		self.MainWindow.Subject = None
-		self.MainWindow.Subject = Window.Entry (self.MainWindow.NewChatFrame, 0, 0, "EW", Text = "Enter the subject here... (optional)")
+		self.MainWindow.Subject = Window.Entry (self.MainWindow.NewChatFrame, 0, 0, "EW", Text = "Enter the subject here... (optional)", TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Optional but if no subject is given, it will be generated from the first prompt, just like ChatGPT does. (Using extra ~100 tokens (for instructions) + first message worth of tokens at your expense. :P)")
 		self.MainWindow.Subject.bind ("<FocusIn>", lambda event: self.MainWindow.Subject.delete (0, 'end')) # click event that clears the field.
 		self.MainWindow.Subject.bind ("<FocusOut>", lambda event: self.MainWindow.Subject.insert (0, "Enter the subject here... (optional)")) # click event that clears the field.
 		self.MainWindow.NewChatButton = None
@@ -355,14 +363,16 @@ class GUI:
 		self.MainWindow.MaxContextMsgLabel = None
 		self.MainWindow.MaxContextMsgLabel = Window.Label (self.MainWindow.MaxContextMsgFrame, 0, 0, "W", "Max Context Messages (Even numbers recommended.):", Theme.BGColor, Anchor = "w", Width = None)
 		self.MainWindow.MaxContextMsgEntry = None
-		self.MainWindow.MaxContextMsgEntry = Window.Entry (self.MainWindow.MaxContextMsgFrame, 0, 1, "EW", Text = str (self.S.MaxContextMsg), Width = 5)
+		self.MainWindow.MaxContextMsgEntry = Window.Entry (self.MainWindow.MaxContextMsgFrame, 0, 1, "EW", Text = str (self.S.MaxContextMsg), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "The last n messages included as context, influences how far back the AI \"remembers\" the conversation. (Even numbers recommended.)")
+		
+		## Max Tokens
 		self.MainWindow.MaxTokensFrame = None
 		self.MainWindow.MaxTokensFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 2, Column = 0, PadY = 0, Sticky = "W")
 		self.MainWindow.MaxTokensFrame.columnconfigure (1, weight = 1)
 		self.MainWindow.MaxTokensLabel = None
 		self.MainWindow.MaxTokensLabel = Window.Label (self.MainWindow.MaxTokensFrame, 0, 0, "W", "Max Tokens (Rules + Context + Prompt combined):", Theme.BGColor, Anchor = "w", Width = None)
 		self.MainWindow.MaxTokensEntry = None
-		self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 5)
+		self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits input tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages. (GPT-3.5 accepts max 2048 tokens. Good idea to not exceed 1900 - 2000 tokens to account for the inaccuracy of the token counter.)")
 		
 		### Key bindings
 		self.SpaceBinding = self.Window.bind ('<space>', lambda event: self.MainWindow.Subject.focus ())
