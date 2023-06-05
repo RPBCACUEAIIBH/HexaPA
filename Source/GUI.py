@@ -938,12 +938,12 @@ class GUI:
 		self.RulesWindow.RulesInputButtons = None
 		self.RulesWindow.RulesInputButtons = Window.Frame (self.RulesWindow.RulesInputFrame, Row = 1, Column = 0, PadX = 0, PadY = 0, Sticky = "EW")
 		self.RulesWindow.RulesInputButtons.columnconfigure (0, weight = 1)
-		self.RulesWindow.PresetTitle = None
-		self.RulesWindow.PresetTitle = Window.Entry (self.RulesWindow.RulesInputButtons, 0, 0, "EW", Text = "Preset Title (Only required for exporting...)", PadX = 0, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Preset title is also the file name...\n(Alpha-numeric characters, and spaces allowed!)")
-		self.RulesWindow.PresetTitle.bind ("<FocusIn>", lambda event: self.RulesWindow.PresetTitle.delete (0, 'end')) # click event that clears the field.
-		self.RulesWindow.ExportPresetButton = None
-		self.RulesWindow.ExportPresetButton = Window.Button (self.RulesWindow.RulesInputButtons, 0, 1, "NSE", "Export Preset", self.RulesExportPresetAction, Width = 11, Height = 1, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Exporting a set of rules allows you to use it as preset in other conversations.\n(By default a rule block only applies to a given conversation, when it is edited a new block is created, and the new one is used for further promts.)")
-		self.RulesWindow.ExportPresetButton.configure (state = tk.DISABLED)
+		#self.RulesWindow.PresetTitle = None
+		#self.RulesWindow.PresetTitle = Window.Entry (self.RulesWindow.RulesInputButtons, 0, 0, "EW", Text = "Preset Title (Only required for exporting...)", PadX = 0, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Preset title is also the file name...\n(Alpha-numeric characters, and spaces allowed!)")
+		#self.RulesWindow.PresetTitle.bind ("<FocusIn>", lambda event: self.RulesWindow.PresetTitle.delete (0, 'end')) # click event that clears the field.
+		#self.RulesWindow.ExportPresetButton = None
+		#self.RulesWindow.ExportPresetButton = Window.Button (self.RulesWindow.RulesInputButtons, 0, 1, "NSE", "Export Preset", self.RulesExportPresetAction, Width = 11, Height = 1, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Exporting a set of rules allows you to use it as preset in other conversations.\n(By default a rule block only applies to a given conversation, when it is edited a new block is created, and the new one is used for further promts.)")
+		#self.RulesWindow.ExportPresetButton.configure (state = tk.DISABLED)
 		self.RulesWindow.RulesInputWrap = tk.BooleanVar (value = 1)
 		self.RulesWindow.WrapButton = None
 		self.RulesWindow.WrapButton = Window.CheckButton (self.RulesWindow.RulesInputButtons, 0, 2, "NSE", "Wrap", self.RulesWindow.RulesInputWrap, lambda: self.RulesWindow.RulesInputTextBox.configure (wrap = ("word" if self.RulesWindow.RulesInputWrap.get () else "none")), PadX = 0, Height = 1, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Wrap text in the textbox...")
