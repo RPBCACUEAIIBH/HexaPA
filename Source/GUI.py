@@ -729,6 +729,7 @@ class GUI:
 		self.ChatWindow.SubjectFrame.columnconfigure (1, weight = 1)
 		self.ChatWindow.BackButton = None
 		self.ChatWindow.BackButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 0, "W", "Back", self.ChatBackAction, Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Save and exit to main.\nHotkey/combination: [Esc]")
+		self.ChatWindow.BackButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
 		if self.Conversation.Subject != "Enter the subject here... (optional)" and self.Conversation.Subject != "":
 			if self.Conversation.CreationTime != None:
 				Text = self.Conversation.Subject + " (Created at " + self.Conversation.CreationTime + ")"
@@ -740,8 +741,10 @@ class GUI:
 		self.ChatWindow.SubjectLabel = Window.Label (self.ChatWindow.SubjectFrame, 0, 1, "EW", Text, Theme.BGColor, Anchor = "w", Width = None)
 		self.ChatWindow.ExportButton = None
 		self.ChatWindow.ExportButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 2, "E", "Export", self.ExportAction, Width = 5, Height = 1, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Export conversation data. (Unlike in ChatGPT you can see which rule block and which context blocks ware sent with any given prompt when you export the conversation, just in case you want to analyze it.)\n(JSON only! ...for now. Recommended to export important data before upgrading HexaPA to new version for now... It's in early alpha, it may not be stable.)")
+		self.ChatWindow.ExportButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
 		self.ChatWindow.RulesButton = None
 		self.ChatWindow.RulesButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 3, "E", "Rules", self.ChatRulesAction, Width = 5, Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Edit rules... (Experimental... The AI will use this as context but treats it more as recommendations. Examples help, old context may contain bad example to a radical change in rules, so use the exclude checkboxes or disable auto context for a while...)\nHotkey/combination: [Ctrl] + [R]")
+		self.ChatWindow.RulesButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
 		
 		### Conversation canvas (This should be populated after the UI is fully constructed, otherwise autoscroll does not seem to scroll all the way to the bottom when continuig conversation...)
 		self.ChatWindow.Canvas = None
@@ -767,29 +770,29 @@ class GUI:
 		self.S.AutoContext = True # Auto context should be on by default, it's only for special cases like asking the AI something totally unrelated, or if you want it to work with specific context within the conversation...
 		self.ChatWindow.AutoContextButton = None
 		self.ChatWindow.AutoContextButton = Window.CheckButton (self.ChatWindow.UserInputButtons, 0, 0, "NSW", "Auto Context", self.ChatWindow.AutoContext, lambda: setattr (self.S, 'AutoContext', bool (self.ChatWindow.AutoContext.get ())), Width = 11, Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "When enabled all but explicitly excluded messages, when disabled only explicitly included messages will be sent as context.\n(Enabled by default. Limits apply! You can see what's getting sent in the terminal by running HexaPA with --verbose option.)")
-		self.ChatWindow.Uninclude = None
-		self.ChatWindow.Uninclude = Window.Button (self.ChatWindow.UserInputButtons, 0, 1, "NSW", "Uninclude All", self.UnincludeAction, Width = 10, Height = 1, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Shortcut for scrolling back an unchecking every \"Include\" checkmark for a new selection...")
+		self.ChatWindow.AutoContextButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
+		self.ChatWindow.UnincludeButton = None
+		self.ChatWindow.UnincludeButton = Window.Button (self.ChatWindow.UserInputButtons, 0, 1, "NSW", "Uninclude All", self.UnincludeAction, Width = 10, Height = 1, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Shortcut for scrolling back an unchecking every \"Include\" checkmark for a new selection...")
+		self.ChatWindow.UnincludeButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
 		self.ChatWindow.UserInputWrap = tk.BooleanVar (value = 1)
 		self.ChatWindow.SpacerFrame = None
 		self.ChatWindow.SpacerFrame = Window.Frame (self.ChatWindow.UserInputButtons, Row = 0, Column = 2, PadX = 0, PadY = 0, Sticky = "NSEW")
 		self.ChatWindow.WrapButton = None
 		self.ChatWindow.WrapButton = Window.CheckButton (self.ChatWindow.UserInputButtons, 0, 3, "NSE", "Wrap", self.ChatWindow.UserInputWrap, lambda: self.ChatWindow.UserInputTextBox.configure (wrap = ("word" if self.ChatWindow.UserInputWrap.get () else "none")), Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Wrap/not wrap text in the prompt textbox.\n(Text is readable wrapped, however this may not be desirable for code.)")
+		self.ChatWindow.WrapButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
 		self.ChatWindow.TokenButton = None
 		self.ChatWindow.TokenButton = Window.Button (self.ChatWindow.UserInputButtons, 0, 4, "NSE", "Count Tokens", self.ChatCountTokensAction, Width = 11, Height = 1, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Estimate input tokens for rules, context, and prompt.\n(May not be entirely accurate...)")
+		self.ChatWindow.TokenButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
 		self.ChatWindow.SendButton = None
 		self.ChatWindow.SendButton = Window.Button (self.ChatWindow.UserInputButtons, 0, 5, "NSE", "Send", lambda: self.ChatSendAction () if self.ChatWindow.UserInputTextBox.get ("1.0", "end-1c") else None, Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Send text to the AI, and wait for response.\nHotkey/combination: [Ctrl] + [Enter]")
+		self.ChatWindow.SendButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
 		if Stats == None:
 			Stats = ""
 		self.ChatWindow.StatsLabel = None
 		self.ChatWindow.StatsLabel = Window.Label (self.ChatWindow.TooltipFrame, 0, 0, "NSEW", Stats, Theme.BGColor, Theme.Text, Theme.TextSize, "w", None, 0, 0, Height = 2)
 		
-		# Disable Send button in case the key was rejected
-		if Communicate.Disabled_OpenAI == True: # Key rejected or no key
-			self.ChatWindow.SendButton.configure (state = tk.DISABLED)
-		
 		### Load conversation
 		try:
-			self.ChatWindow.BackButton.configure (state = tk.DISABLED)
 			if len (self.Conversation.Blocks) == 0: # Reminder, in case there is no content yet...
 				Text = "Remember:\n- Clicking on a message enlarges it for easier reading.\n- The prompt + rules + context must be less then 2048 tokens!\n- The AI's answer may or may not fit into 2048 tokens, but it is limited to that by OpenAI!\n- It does not have the ability to remember! The rules and context you send, is all it has to work with!\n- It does not think! It simply reacts to the given text, generating a response.\n- Do not ask for a numerical answer, the AI is simply terrible at math! It guesses the answer based on it's probablility, rather then calculating it. (The current model at least...)\n- Be concise, don't argue with the AI if it doesn't give you the answer you want, because you pay for your argument as well as the AI's apology, and it may still not give you an acceptable answer! Instead tweak what rules, context, and prompt you send next!\n- It does not feel, so praising or cursing it only cost you money! (Still it's a good idea to be polite, just to avoid developing bad habits...)\n\n- OpenAI's current policy (as of 5th of May 2023) says that they don't use data form API calls for training. (...but off course every company leaves a clause in it's ToS to change anything anytime, so I advise against feeding it any sensitive information or code! Treat it with an \"Anything you say can be used against you!\" attitude!)\n\n- HexaPA is free and open source software, if you find it helpful please donate at: www.osrc.rip/Support.html"
 				self.DisplayMessage ("Developer", Text)
@@ -804,7 +807,6 @@ class GUI:
 				else:
 					HL.Log ("GUI.py: Chain validation failed! >> Attempting to display read-only data! (This may fail...)", 'E', 2)
 					HL.Log ("", 'E', 2)
-					self.ChatWindow.SendButton.configure (state = tk.DISABLED)
 				for Block in self.Conversation.Blocks:
 					MessageData = Data ()
 					MessageData.Parse (self.K.UserKey, Block.Data, Block.BlockID, Block.Rating)
@@ -830,10 +832,20 @@ class GUI:
 			if self.Conversation.LatestRules != None:
 				self.Conversation.Rules = Data ()
 				self.Conversation.Rules.Parse (self.K.UserKey, self.Conversation.Blocks[self.Conversation.LatestRules].Data, self.Conversation.LatestRules)
+			
+			# Enable buttons
+			self.ChatWindow.BackButton.configure (state = tk.NORMAL)
+			self.ChatWindow.ExportButton.configure (state = tk.NORMAL)
+			self.ChatWindow.RulesButton.configure (state = tk.NORMAL)
+			self.ChatWindow.AutoContextButton.configure (state = tk.NORMAL)
+			self.ChatWindow.WrapButton.configure (state = tk.NORMAL)
+			self.ChatWindow.UnincludeButton.configure (state = tk.NORMAL)
+			self.ChatWindow.TokenButton.configure (state = tk.NORMAL)
+			if Communicate.Disabled_OpenAI == False: # Key rejected or no key
+				self.ChatWindow.SendButton.configure (state = tk.NORMAL)
+		
 		except Exception:
 			HL.Log ("GUI.py: Could not parse block content! It can be corrupted or encrypted with other username and password combination... (This can happen when .Keys.bin and .Settings.bin has been deleted, and new credentials entered. If that's the case and block validation was successful, the conversation can still be decrypted with the initial username and password combination.)", 'E', 2)
-			self.ChatWindow.SendButton.configure (state = tk.DISABLED)
-		self.ChatWindow.BackButton.configure (state = tk.NORMAL)
 		
 		# Key binding...
 		self.SpaceBinding = self.Window.bind ('<space>', lambda event: self.ChatWindow.UserInputTextBox.focus ())
