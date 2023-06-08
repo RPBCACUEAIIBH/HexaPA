@@ -444,7 +444,10 @@ class GUI:
 			Rules = {"role": "system", "content": ""}
 		
 		### Construct Prompt for sending... (Required by the API)
-		Prompt = {"role": "user", "content": self.ChatWindow.UserInputTextBox.get ("1.0", "end").strip ()}
+		if self.Conversation.LatestRules != None:
+			Prompt = {"role": "user", "content": self.Conversation.Rules.Message + "\n" + self.ChatWindow.UserInputTextBox.get ("1.0", "end").strip ()}
+		else:
+			Prompt = {"role": "user", "content": self.ChatWindow.UserInputTextBox.get ("1.0", "end").strip ()}
 		
 		### Generate context... (Optional for the API, but AI doesn't "remember" previous prompt/answer without it...)
 		Context = None
@@ -593,7 +596,10 @@ class GUI:
 			Rules = {"role": "system", "content": ""}
 		
 		### Construct Prompt for sending... (Required by the API)
-		Prompt = {"role": "user", "content": self.ChatWindow.Messages[PromptIndex].MessageData.Message}
+		if self.Conversation.LatestRules != None:
+			Prompt = {"role": "user", "content": self.Conversation.Rules.Message + "\n" + self.ChatWindow.Messages[PromptIndex].MessageData.Message}
+		else:
+			Prompt = {"role": "user", "content": self.ChatWindow.Messages[PromptIndex].MessageData.Message}
 		
 		### Generate context... (Optional for the API, but AI doesn't "remember" previous prompt/answer without it...)
 		Context = None
@@ -846,16 +852,16 @@ class GUI:
 	
 	
 	def RulesBackAction (self):
-		self.Window.unbind ('<space>', self.SpaceBinding)
+		self.RulesUnbindSpace ()
 		self.Window.unbind ('<Escape>', self.EscBinding)
-		NewRules = Data (self.RulesWindow.RulesInputTextBox.get ("1.0", "end").strip (), DataType = "Rules")
+		NewRules = Data (self.RulesWindow.RulesInputTextBox.get ("1.0", "end").strip (), Message = self.RulesWindow.RulesMessageInjectionTextBox.get ("1.0", "end").strip (), DataType = "Rules")
 		if self.Conversation.LatestRules == None and NewRules.Rules != "" and NewRules.Rules != self.RulesWindow.Reminder: # New conversation with no rules defined yet. (exclude reminder text)
 			self.Conversation.NewBlock (NewRules.Dump (self.K.UserKey))
 			self.Conversation.LatestRules = self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID # Last block's ID where the rules have just been saved.
 			HL.Log ("GUI.py: First rules saved to block: " + str (self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID), 'D', 2)
 			self.Conversation.Rules = Data () # If there ware no rules defined yet this shoud still be None
 			self.Conversation.Rules.Parse (self.K.UserKey, self.Conversation.Blocks[self.Conversation.LatestRules].Data, self.Conversation.LatestRules)
-		elif NewRules.Rules != self.RulesWindow.RuleData.Rules and NewRules.Rules != self.RulesWindow.Reminder: # If the rules have changed. (exclude reminder text)
+		elif NewRules.Rules != self.RulesWindow.RuleData.Rules and NewRules.Rules != self.RulesWindow.Reminder or NewRules.Message != self.RulesWindow.RuleData.Message and NewRules.Message != self.RulesWindow.InjectionReminder: # If the rules have changed. (exclude reminder text)
 			self.Conversation.NewBlock (NewRules.Dump (self.K.UserKey))
 			self.Conversation.LatestRules = self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID # Last block's ID where the rules have just been saved.
 			HL.Log ("GUI.py: New rules saved to block: " + str (self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID), 'D', 2)
@@ -881,9 +887,21 @@ class GUI:
 	
 	
 	def ClearReminder (self, event):
-		self.RulesWindow.RulesInputTextBox.delete ('1.0', 'end')
-		self.RulesWindow.RulesInputTextBox.config (fg = Theme.Text)
+		self.RulesUnbindSpace ()
 		self.RulesWindow.RulesInputTextBox.unbind ("<FocusIn>")
+		self.RulesWindow.RulesMessageInjectionTextBox.unbind ("<FocusIn>")
+		if self.RulesWindow.RulesInputTextBox.get ("1.0", "end").strip () == self.RulesWindow.Reminder or self.RulesWindow.RulesInputTextBox.get ("1.0", "end").strip () == "":
+			self.RulesWindow.RulesInputTextBox.delete ('1.0', 'end')
+			self.RulesWindow.RulesInputTextBox.config (fg = Theme.Text)
+		if self.RulesWindow.RulesMessageInjectionTextBox.get ("1.0", "end").strip () == self.RulesWindow.InjectionReminder or self.RulesWindow.RulesMessageInjectionTextBox.get ("1.0", "end").strip () == "":
+			self.RulesWindow.RulesMessageInjectionTextBox.delete ('1.0', 'end')
+			self.RulesWindow.RulesMessageInjectionTextBox.config (fg = Theme.Text)
+	
+	
+	
+	def RulesUnbindSpace (self):
+		if self.Window.bind ('<space>'): # When focusing from 1 textbox/input to another, space is alredy unbound, so need to check...
+			self.Window.unbind ('<space>', self.SpaceBinding)
 	
 	
 	
@@ -894,7 +912,7 @@ class GUI:
 		
 		### Tooltip label
 		self.RulesWindow.TooltipFrame = None
-		self.RulesWindow.TooltipFrame = Window.Frame (self.RulesWindow.Base, Row = 3, Column = 0, Sticky = "EW", PadX = 0, PadY = 0)
+		self.RulesWindow.TooltipFrame = Window.Frame (self.RulesWindow.Base, Row = 4, Column = 0, Sticky = "EW", PadX = 0, PadY = 0)
 		self.RulesWindow.TooltipFrame.columnconfigure (0, weight = 1)
 		self.RulesWindow.TooltipLabel = None
 		self.RulesWindow.TooltipLabel = Window.Label (self.RulesWindow.TooltipFrame, 0, 0, "NSEW", "", Theme.BGColor, Theme.SmallText, Theme.SmallTextSize, Anchor = "w", PadX = 0, PadY = 0, Height = 2) # Hight must be limited otherwise the label may push other widgets out from beneath the mouse, and it oscillates between Tooltip and no Tooltip...
@@ -911,42 +929,82 @@ class GUI:
 		
 		
 		### UserInput
+		self.RulesWindow.RulesContentFrame = None
+		self.RulesWindow.RulesContentFrame = Window.Frame (self.RulesWindow.Base, Row = 1, Column = 0, PadX = 0, PadY = 0, Sticky = "NSEW")
+		self.RulesWindow.RulesContentFrame.columnconfigure (0, weight = 1)
+		self.RulesWindow.RulesContentFrame.rowconfigure (0, weight = 4)
+		self.RulesWindow.RulesContentFrame.rowconfigure (1, weight = 1)
+		
+		# Rules
 		self.RulesWindow.RulesInputFrame = None
-		self.RulesWindow.RulesInputFrame = Window.Frame (self.RulesWindow.Base, Row = 1, Column = 0, PadX = 0, PadY = 0, Sticky = "NSEW")
+		self.RulesWindow.RulesInputFrame = Window.Frame (self.RulesWindow.RulesContentFrame, Theme.PromptBG, 0, 0, PadX = 0, PadY = 0, Sticky = "NSEW")
 		self.RulesWindow.RulesInputFrame.columnconfigure (0, weight = 1)
-		self.RulesWindow.RulesInputFrame.rowconfigure (0, weight = 1)
+		self.RulesWindow.RulesInputFrame.rowconfigure (1, weight = 1)
+		self.RulesWindow.RulesLabel = None
+		self.RulesWindow.RulesLabel = Window.Label (self.RulesWindow.RulesInputFrame, 0, 0, "EW", "Rules:", Theme.PromptBG, Anchor = "w", Width = None, PadX = 0)
 		self.RulesWindow.RulesInputTextBoxFrame = None
 		self.RulesWindow.RulesInputScrollX = None
 		self.RulesWindow.RulesInputScrollY = None
 		self.RulesWindow.RulesInputTextBox = None
 		self.RulesWindow.Reminder = "This text is just a reminder to you, it is not sent to the AI! (Don't worry you don't pay for it! This text will disappear as soon as you click here to input your rules.)\n\nRemember:\n- Apparently you pay for the tags every time for every message sent, whether it's rules, context or prompt since the token counter(tiktoken) gives the most accurate result with those tags included. It means that even if this section is left empty, and you do not include any context, the token counter will estimate a few tokens for the rules, since the API requires this line(which takes a few tokenst) to be sent: \"role\": \"system\", \"content\": \"\"\n- Try to be as short as possible with the rules, since you will pay for anything you put here every time you press the \"Send\" button in the chat. That being said this section is important to tweak the AI response for your productivity.\n- The rules (if changed) will be saved for the conversation when you go back to the chat screen, but you must export it as preset to become availabe in other conversations, however presets are stored separately and any changes to the rule will only be local unless you export the changed verstion again to a preset."
+		self.RulesWindow.RulesTooltipText = "Enter the rules here.\nHotkey/combination: [Space]"
+		
+		# Reference:
+		self.RulesWindow.InjectionInputFrame = None
+		self.RulesWindow.InjectionInputFrame = Window.Frame (self.RulesWindow.RulesContentFrame, Theme.ResponseBG, 1, 0, PadX = 0, PadY = 0, Sticky = "NSEW")
+		self.RulesWindow.InjectionInputFrame.columnconfigure (0, weight = 1)
+		self.RulesWindow.InjectionInputFrame.rowconfigure (1, weight = 1)
+		self.RulesWindow.PromptInjectionLabel = None
+		self.RulesWindow.PromptInjectionLabel = Window.Label (self.RulesWindow.InjectionInputFrame, 0, 0, "EW", "Prompt Injection:", Theme.ResponseBG, Anchor = "w", Width = None, PadX = 0)
+		self.RulesWindow.RulesMessageInjectionTextBoxFrame = None
+		self.RulesWindow.RulesMessageInjectionScrollX = None
+		self.RulesWindow.RulesMessageInjectionScrollY = None
+		self.RulesWindow.RulesMessageInjectionTextBox = None
+		self.RulesWindow.InjectionReminder = "From my intaractions with the AI, I have the impression that the AI is likely to ignore previous messages unless you refer to them, thus it is likely to ignore the rules. I added this field to sort of auto reference the rules, by injecting a reference into the prompt every time...\n\nAnything you specify here will be injected into the prompt. It is intended to remind the AI to follow the rules. Recommended use:\n\nIn the above textbox put something like:\nRules for you (the AI language model):\n- Text in [] are direct instructions, that you strictly follow!\n- Some other rule(s) the AI should follow...\n\nIn this textbox:\n[Act according to the rules set at the beginning!]"
+		self.RulesWindow.MessageInjectionTooltipText = "Refer to the rules here.\n(Optional. Increases the likelyhood of the AI following the rules.)"
 		self.RulesWindow.RuleData = Data (DataType = "Rules")
 		if self.Conversation.LatestRules == None: # If no rules have been defined yet.
+			# Rules
 			HL.Log ("GUI.py: No Latest Rules ID: ", 'D', 2)
-			self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 0, 0, PadX = 0, Sticky = "NSEW", Text = self.RulesWindow.Reminder, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Rules entry box...\nHotkey/combination: [Space]")
+			self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 1, 0, PadY = 0, Sticky = "NSEW", Text = self.RulesWindow.Reminder, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = self.RulesWindow.RulesTooltipText)
 			self.RulesWindow.RulesInputTextBox.config (fg = Theme.SmallText)
 			self.RulesWindow.RulesInputTextBox.bind ("<FocusIn>", self.ClearReminder) # click event that clears the field.
+			
+			# Prompt injection
+			self.RulesWindow.RulesMessageInjectionTextBoxFrame, self.RulesWindow.RulesMessageInjectionScrollX, self.RulesWindow.RulesMessageInjectionScrollY, self.RulesWindow.RulesMessageInjectionTextBox = Window.TextBox (self.RulesWindow.InjectionInputFrame, 1, 0, PadY = 0, Sticky = "NSEW", Text = self.RulesWindow.InjectionReminder, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = self.RulesWindow.MessageInjectionTooltipText)
+			self.RulesWindow.RulesMessageInjectionTextBox.config (fg = Theme.SmallText)
+			self.RulesWindow.RulesMessageInjectionTextBox.bind ("<FocusIn>", self.ClearReminder) # click event that clears the field.
 		else:
 			self.RulesWindow.RuleData.Parse (self.K.UserKey, self.Conversation.Blocks[self.Conversation.LatestRules].Data, self.Conversation.LatestRules)
 			HL.Log ("GUI.py: Latest Rules ID: " + str (self.Conversation.LatestRules), 'D', 2)
+			# Rules
 			if self.RulesWindow.RuleData.DataType == "Rules" and self.RulesWindow.RuleData.Rules == "": # If the rules have been deleted.
-				self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 0, 0, PadX = 0, Sticky = "NSEW", Text = self.RulesWindow.Reminder, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Rules entry box...\nHotkey/combination: [Space]")
+				self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 1, 0, PadY = 0, Sticky = "NSEW", Text = self.RulesWindow.Reminder, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = self.RulesWindow.RulesTooltipText)
 				self.RulesWindow.RulesInputTextBox.config (fg = Theme.SmallText)
 				self.RulesWindow.RulesInputTextBox.bind ("<FocusIn>", self.ClearReminder) # click event that clears the field.
 			else:
-				self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 0, 0, PadX = 0, Sticky = "NSEW", Text = self.RulesWindow.RuleData.Rules, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Rules entry box...\nHotkey/combination: [Space]")
+				self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 1, 0, PadY = 0, Sticky = "NSEW", Text = self.RulesWindow.RuleData.Rules, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = self.RulesWindow.RulesTooltipText)
+			
+			# Prompt injection
+			if self.RulesWindow.RuleData.DataType == "Rules" and self.RulesWindow.RuleData.Message == "": # If the rules have been deleted.
+				self.RulesWindow.RulesMessageInjectionTextBoxFrame, self.RulesWindow.RulesMessageInjectionScrollX, self.RulesWindow.RulesMessageInjectionScrollY, self.RulesWindow.RulesMessageInjectionTextBox = Window.TextBox (self.RulesWindow.InjectionInputFrame, 1, 0, PadY = 0, Sticky = "NSEW", Text = self.RulesWindow.InjectionReminder, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = self.RulesWindow.MessageInjectionTooltipText)
+				self.RulesWindow.RulesMessageInjectionTextBox.config (fg = Theme.SmallText)
+				self.RulesWindow.RulesMessageInjectionTextBox.bind ("<FocusIn>", self.ClearReminder) # click event that clears the field.
+			else:
+				self.RulesWindow.RulesMessageInjectionTextBoxFrame, self.RulesWindow.RulesMessageInjectionScrollX, self.RulesWindow.RulesMessageInjectionScrollY, self.RulesWindow.RulesMessageInjectionTextBox = Window.TextBox (self.RulesWindow.InjectionInputFrame, 1, 0, PadY = 0, Sticky = "NSEW", Text = self.RulesWindow.RuleData.Message, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = self.RulesWindow.MessageInjectionTooltipText)
+		
 		self.RulesWindow.RulesInputButtons = None
-		self.RulesWindow.RulesInputButtons = Window.Frame (self.RulesWindow.RulesInputFrame, Row = 1, Column = 0, PadX = 0, PadY = 0, Sticky = "EW")
+		self.RulesWindow.RulesInputButtons = Window.Frame (self.RulesWindow.Base, Row = 3, Column = 0, Sticky = "EW")
 		self.RulesWindow.RulesInputButtons.columnconfigure (0, weight = 1)
 		#self.RulesWindow.PresetTitle = None
 		#self.RulesWindow.PresetTitle = Window.Entry (self.RulesWindow.RulesInputButtons, 0, 0, "EW", Text = "Preset Title (Only required for exporting...)", PadX = 0, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Preset title is also the file name...\n(Alpha-numeric characters, and spaces allowed!)")
-		#self.RulesWindow.PresetTitle.bind ("<FocusIn>", lambda event: self.RulesWindow.PresetTitle.delete (0, 'end')) # click event that clears the field.
+		#self.RulesWindow.PresetTitle.bind ("<FocusIn>", lambda event: (self.RulesWindow.PresetTitle.delete (0, 'end'), self.RulesUnbindSpace)) # click event that clears the field.
 		#self.RulesWindow.ExportPresetButton = None
 		#self.RulesWindow.ExportPresetButton = Window.Button (self.RulesWindow.RulesInputButtons, 0, 1, "NSE", "Export Preset", self.RulesExportPresetAction, Width = 11, Height = 1, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Exporting a set of rules allows you to use it as preset in other conversations.\n(By default a rule block only applies to a given conversation, when it is edited a new block is created, and the new one is used for further promts.)")
 		#self.RulesWindow.ExportPresetButton.configure (state = tk.DISABLED)
 		self.RulesWindow.RulesInputWrap = tk.BooleanVar (value = 1)
 		self.RulesWindow.WrapButton = None
-		self.RulesWindow.WrapButton = Window.CheckButton (self.RulesWindow.RulesInputButtons, 0, 2, "NSE", "Wrap", self.RulesWindow.RulesInputWrap, lambda: self.RulesWindow.RulesInputTextBox.configure (wrap = ("word" if self.RulesWindow.RulesInputWrap.get () else "none")), PadX = 0, Height = 1, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Wrap text in the textbox...")
+		self.RulesWindow.WrapButton = Window.CheckButton (self.RulesWindow.RulesInputButtons, 0, 2, "NSE", "Wrap", self.RulesWindow.RulesInputWrap, lambda: (self.RulesWindow.RulesInputTextBox.configure (wrap = ("word" if self.RulesWindow.RulesInputWrap.get () else "none")), self.RulesWindow.RulesMessageInjectionTextBox.configure (wrap = ("word" if self.RulesWindow.RulesInputWrap.get () else "none"))), PadX = 0, Height = 1, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Wrap text in the textbox...")
 		
 		# Key binding...
 		self.SpaceBinding = self.Window.bind ('<space>', lambda event: self.RulesWindow.RulesInputTextBox.focus ())
