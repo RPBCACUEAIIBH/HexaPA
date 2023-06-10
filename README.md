@@ -3,6 +3,8 @@ HexaPA is an open source AI chat (much like ChatGPT) using the OpenAI API, allow
 
 **Please note that it's currently not a fully functional release yet. (Still a work in progress...)**
 
+
+
 ## Why should you care?!
 Max 2048 tokens in - max 2048 tokens out... But how much of that 2048 input tokens is actually useful data to you, and how much is "wasted"?
 I found that the token counter only gives somewhat accurate estimates, if you not only include the content but also include the roles, so this is what you actually pay for in tokens:
@@ -23,6 +25,15 @@ The other point of HexaPA is user definalbe rules! I found that once the convers
 The 3rd point of HexaPA is alternatives! I plan to support other AI chat APIs in the future, such as Google's Bard, and Open Assistent, once they make a public API available. (Currently neither of those are avialable.) A healthy competition of large companies is obviously good for the user.
 
 To be clear: I'm not against payed services, the OpenAI dev's job is to make money from it's users, mine is to maximize the value you get for your money spent on their services! Either way you use their payed service, I'm not trying to find a loophole around that. (I'm using OpenAI's payed service, because it's a good service, and I don't mind paying for it!) With the official ChatGPT you get simplicity, with HexaPA you get full control. (The exact same reason why I love linux is full control! :D)
+
+
+
+## Support options
+[SubscribeStar](https://www.subscribestar.com/OSRC)
+[Patreon](https://www.patreon.com/OSRC)
+[PayPal](https://www.paypal.com/paypalme/OSRC)
+
+By the way you can also see images of the project on SubscribeStar and Patreon.
 
 
 

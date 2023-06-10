@@ -12,7 +12,7 @@ from Source.Data import *
 
 class Commands:
 	@staticmethod
-	def Export (Key, Chain):
+	def ExportChatJSON (Key, Chain):
 		if len (Chain.Blocks) > 0:
 			### Create Export dir and filename...
 			if not os.path.exists ("Export"):
@@ -24,6 +24,28 @@ class Commands:
 			Extract = {"Subject": Chain.Subject, "CreationTime": Chain.CreationTime, "Blocks": []}
 			for Block in Chain.Blocks:
 				Extract["Blocks"].append (Block.DumpDict (Key))
+			
+			### Display
+			if Args.verbose or Args.debug:
+				print (json.dumps (Extract, indent = 4))
+			
+			### Save to file
+			with open (JSONFile, 'w') as File:
+				json.dump (Extract, File, indent = 4)
+	
+	
+	
+	@staticmethod
+	def ExportRulesJSON (Key, Chain, BlockID, PresetTitle):
+		if len (Chain.Blocks) > 0:
+			### Create Export dir and filename...
+			if not os.path.exists ("Presets/UserPresets"):
+				os.makedirs ("Presets/UserPresets")
+			JSONFile = "Presets/UserPresets/" + re.sub ('[\W_]+', '_', PresetTitle) + ".json"
+			HL.Log ("Commands.py: Exporting conversation to: " + JSONFile, 'I', 9)
+			
+			### Export
+			Extract = {"Title": PresetTitle, "Block": Chain.Blocks[BlockID].DumpDict (Key)}
 			
 			### Display
 			if Args.verbose or Args.debug:

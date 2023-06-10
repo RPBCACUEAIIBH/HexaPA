@@ -19,7 +19,6 @@ from Source.Data import *
 from Source.Settings import *
 from Source.Options import *
 from Source.Commands import *
-from Source.Tooltip import *
 
 
 class GUI:
@@ -707,7 +706,7 @@ class GUI:
 	
 	
 	def ExportAction (self):
-		Commands.Export (self.K.UserKey, self.Conversation)
+		Commands.ExportChatJSON (self.K.UserKey, self.Conversation)
 	
 	
 	
@@ -863,9 +862,7 @@ class GUI:
 	
 	
 	
-	def RulesBackAction (self):
-		self.RulesUnbindSpace ()
-		self.Window.unbind ('<Escape>', self.EscBinding)
+	def SaveRules (self): # used by RulesBackAction, and RulesExportPresetAction...
 		NewRules = Data (self.RulesWindow.RulesInputTextBox.get ("1.0", "end").strip (), Message = self.RulesWindow.RulesMessageInjectionTextBox.get ("1.0", "end").strip (), DataType = "Rules")
 		if self.Conversation.LatestRules == None and NewRules.Rules != "" and NewRules.Rules != self.RulesWindow.Reminder: # New conversation with no rules defined yet. (exclude reminder text)
 			self.Conversation.NewBlock (NewRules.Dump (self.K.UserKey))
@@ -873,11 +870,19 @@ class GUI:
 			HL.Log ("GUI.py: First rules saved to block: " + str (self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID), 'D', 2)
 			self.Conversation.Rules = Data () # If there ware no rules defined yet this shoud still be None
 			self.Conversation.Rules.Parse (self.K.UserKey, self.Conversation.Blocks[self.Conversation.LatestRules].Data, self.Conversation.LatestRules)
-		elif NewRules.Rules != self.RulesWindow.RuleData.Rules and NewRules.Rules != self.RulesWindow.Reminder or NewRules.Message != self.RulesWindow.RuleData.Message and NewRules.Message != self.RulesWindow.InjectionReminder: # If the rules have changed. (exclude reminder text)
-			self.Conversation.NewBlock (NewRules.Dump (self.K.UserKey))
-			self.Conversation.LatestRules = self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID # Last block's ID where the rules have just been saved.
-			HL.Log ("GUI.py: New rules saved to block: " + str (self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID), 'D', 2)
-			self.Conversation.Rules.Parse (self.K.UserKey, self.Conversation.Blocks[self.Conversation.LatestRules].Data, self.Conversation.LatestRules)
+		elif self.Conversation.LatestRules != None:
+			if NewRules.Rules != self.Conversation.Rules.Rules and NewRules.Rules != self.RulesWindow.Reminder or NewRules.Rules != "" and NewRules.Message != self.Conversation.Rules.Message and NewRules.Message != self.RulesWindow.InjectionReminder: # If the rules have changed. (exclude reminder text)
+				self.Conversation.NewBlock (NewRules.Dump (self.K.UserKey))
+				self.Conversation.LatestRules = self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID # Last block's ID where the rules have just been saved.
+				HL.Log ("GUI.py: New rules saved to block: " + str (self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID), 'D', 2)
+				self.Conversation.Rules.Parse (self.K.UserKey, self.Conversation.Blocks[self.Conversation.LatestRules].Data, self.Conversation.LatestRules)
+	
+	
+	
+	def RulesBackAction (self):
+		self.RulesUnbindSpace ()
+		self.Window.unbind ('<Escape>', self.EscBinding)
+		self.SaveRules ()
 		self.RulesWindow.Base.grid_forget ()
 		self.ChatWindow.Base.grid (padx = Theme.PadX, pady = Theme.PadY, sticky = "NSEW") # No need to generate the chat content each time... it's slow, and already generated...
 		self.Window.update ()
@@ -894,7 +899,13 @@ class GUI:
 	
 	
 	def RulesExportPresetAction (self):
-		pass
+		if self.RulesWindow.PresetTitle.get ().strip () != "" and self.RulesWindow.PresetTitle.get ().strip () != self.RulesWindow.PresetTitleText:
+			self.RulesWindow.ErrorLabel.config (text = "") # This should get rid of prevous error message...
+			self.SaveRules ()
+			Commands.ExportRulesJSON (self.K.UserKey, self.Conversation, self.Conversation.LatestRules, self.RulesWindow.PresetTitle.get ().strip ())
+		else:
+			self.RulesWindow.ErrorLabel.config (text = "Preset Title REQUIRED for exporting!")
+			self.RulesWindow.ErrorLabel.lift ()
 	
 	
 	
@@ -928,6 +939,8 @@ class GUI:
 		self.RulesWindow.TooltipFrame.columnconfigure (0, weight = 1)
 		self.RulesWindow.TooltipLabel = None
 		self.RulesWindow.TooltipLabel = Window.Label (self.RulesWindow.TooltipFrame, 0, 0, "NSEW", "", Theme.BGColor, Theme.SmallText, Theme.SmallTextSize, Anchor = "w", PadX = 0, PadY = 0, Height = 2) # Hight must be limited otherwise the label may push other widgets out from beneath the mouse, and it oscillates between Tooltip and no Tooltip...
+		self.RulesWindow.ErrorLabel = None
+		self.RulesWindow.ErrorLabel = Window.Label (self.RulesWindow.TooltipFrame, 0, 0, "NSEW", "", Theme.BGColor, Theme.Error, Theme.TextSize, Anchor = "w", PadX = 0, PadY = 0, Height = 2) # Hight must be limited otherwise the label may push other widgets out from beneath the mouse, and it oscillates between Tooltip and no Tooltip...
 		
 		### Subject label and Back to Main / Edit Rules buttons
 		self.RulesWindow.TitleFrame = None
@@ -1008,12 +1021,12 @@ class GUI:
 		self.RulesWindow.RulesInputButtons = None
 		self.RulesWindow.RulesInputButtons = Window.Frame (self.RulesWindow.Base, Row = 3, Column = 0, Sticky = "EW")
 		self.RulesWindow.RulesInputButtons.columnconfigure (0, weight = 1)
-		#self.RulesWindow.PresetTitle = None
-		#self.RulesWindow.PresetTitle = Window.Entry (self.RulesWindow.RulesInputButtons, 0, 0, "EW", Text = "Preset Title (Only required for exporting...)", PadX = 0, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Preset title is also the file name...\n(Alpha-numeric characters, and spaces allowed!)")
-		#self.RulesWindow.PresetTitle.bind ("<FocusIn>", lambda event: (self.RulesWindow.PresetTitle.delete (0, 'end'), self.RulesUnbindSpace)) # click event that clears the field.
-		#self.RulesWindow.ExportPresetButton = None
-		#self.RulesWindow.ExportPresetButton = Window.Button (self.RulesWindow.RulesInputButtons, 0, 1, "NSE", "Export Preset", self.RulesExportPresetAction, Width = 11, Height = 1, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Exporting a set of rules allows you to use it as preset in other conversations.\n(By default a rule block only applies to a given conversation, when it is edited a new block is created, and the new one is used for further promts.)")
-		#self.RulesWindow.ExportPresetButton.configure (state = tk.DISABLED)
+		self.RulesWindow.PresetTitle = None
+		self.RulesWindow.PresetTitleText = "Preset Title (Only required for exporting...)"
+		self.RulesWindow.PresetTitle = Window.Entry (self.RulesWindow.RulesInputButtons, 0, 0, "EW", Text = self.RulesWindow.PresetTitleText, PadX = 0, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Preset title is also the file name...\n(Alpha-numeric characters, and spaces allowed!)")
+		self.RulesWindow.PresetTitle.bind ("<FocusIn>", lambda event: (self.RulesWindow.PresetTitle.delete (0, 'end'), self.RulesUnbindSpace ())) # click event that clears the field.
+		self.RulesWindow.ExportPresetButton = None
+		self.RulesWindow.ExportPresetButton = Window.Button (self.RulesWindow.RulesInputButtons, 0, 1, "NSE", "Export Preset", self.RulesExportPresetAction, Width = 11, Height = 1, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Exporting a set of rules allows you to use it as preset in other conversations.\n(By default a rule block only applies to a given conversation, when it is edited a new block is created, and the new one is used for further promts.)")
 		self.RulesWindow.RulesInputWrap = tk.BooleanVar (value = 1)
 		self.RulesWindow.WrapButton = None
 		self.RulesWindow.WrapButton = Window.CheckButton (self.RulesWindow.RulesInputButtons, 0, 2, "NSE", "Wrap", self.RulesWindow.RulesInputWrap, lambda: (self.RulesWindow.RulesInputTextBox.configure (wrap = ("word" if self.RulesWindow.RulesInputWrap.get () else "none")), self.RulesWindow.RulesMessageInjectionTextBox.configure (wrap = ("word" if self.RulesWindow.RulesInputWrap.get () else "none"))), PadX = 0, Height = 1, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = "Wrap text in the textbox...")
