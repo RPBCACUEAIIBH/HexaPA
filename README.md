@@ -29,9 +29,9 @@ To be clear: I'm not against payed services, the OpenAI dev's job is to make mon
 
 
 ## Support options
-[SubscribeStar](https://www.subscribestar.com/OSRC)
-[Patreon](https://www.patreon.com/OSRC)
-[PayPal](https://www.paypal.com/paypalme/OSRC)
+- [SubscribeStar](https://www.subscribestar.com/OSRC)
+- [Patreon](https://www.patreon.com/OSRC)
+- [PayPal](https://www.paypal.com/paypalme/OSRC)
 
 By the way you can also see images of the project on SubscribeStar and Patreon.
 
