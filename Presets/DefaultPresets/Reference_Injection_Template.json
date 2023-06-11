@@ -1,5 +1,6 @@
 {
     "Title": "Reference Injection Template",
+    "Description": "General purpose AI rules, that you can expand with your own...",
     "Block": {
         "ID": 0,
         "TimeStamp": "2023-06-10 18:43:51",

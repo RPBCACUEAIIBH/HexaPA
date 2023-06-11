@@ -45,7 +45,7 @@ class Commands:
 			HL.Log ("Commands.py: Exporting conversation to: " + JSONFile, 'I', 9)
 			
 			### Export
-			Extract = {"Title": PresetTitle, "Block": Chain.Blocks[BlockID].DumpDict (Key)}
+			Extract = {"Title": PresetTitle, "Description": "", "Block": Chain.Blocks[BlockID].DumpDict (Key)}
 			
 			### Display
 			if Args.verbose or Args.debug:
