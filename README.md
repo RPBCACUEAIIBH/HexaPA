@@ -100,3 +100,24 @@ Installed separately:
 - from pillow -> Image, ImageTk (for images and use of images in tkinter GUI)
 - openai (for accessing OpenAI API)
 - tiktoken (for OpenAI token counting)
+
+
+
+## Updating to V0.2:
+- If you coned the git repository, then do:
+```
+git fetch origin main
+```
+- else you will need to download and unzip the new version...
+- v0.2 requires also updating the OpenAI library, since it uses the latest model, and it's new 16k variant as well:
+```
+pip install --upgrade openai
+```
+
+
+
+## Updates:
+# Version v0.2
+- Reference injection - It starts the prompt with a section definded on the "Rules" screen, which can be used to call refer to the rules, thus the AI is more likely to follow the rules.
+- Switched to the latest version of the GPT-3.5 model, that came out yesterday, and also added support for the new 16k variant with 4x the context length. All you need to switch is to define an input token limit greater then 2048. (It should work up to 8192, since HexaPA only does even split of input and output tokens for now.)
+- Rules can now be exported to JSON as preset (Unfinished feature, may change, and can not yet be used as presets...)

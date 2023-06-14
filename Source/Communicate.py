@@ -89,8 +89,8 @@ class Communicate:
 				# I initially misunderstood... it's not an even split, the total tokens Input + Output tokens is capped at 4096 for gtp-3.5-turbo, and 16384 for the new gpt-3.5-turbo-16k
 				if MaxTokens > 2048: # FOR NOW! >> If the token limit is above half of max, it will switch to the new gtp-3.5-turbo-16k model. (It is more expensive, but allows 4x the amount of tokens.)
 					Model = AIModel + "-16k-0613"
-					if MaxTokens > 16384: # Capping the tokne
-						MaxTokens = 16384
+					if MaxTokens > 8192:
+						MaxTokens = 8192
 				else:
 					Model = AIModel + "-0613"
 				HL.Log ("Communicate.py: Using AI Model: " + Model, 'D', 4)
