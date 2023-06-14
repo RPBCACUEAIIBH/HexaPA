@@ -103,7 +103,7 @@ Installed separately:
 
 
 
-## Updating to V0.2:
+## Updating to v0.2:
 - Export important conversations before updating, just in case not to loose them!
 - If you cloned the git repository, then do:
 ```
@@ -118,7 +118,7 @@ pip install --upgrade openai
 
 
 ## Updates:
-# Version v0.2
-- Reference injection - It starts the prompt with a section definded on the "Rules" screen, which can be used to call refer to the rules, thus the AI is more likely to follow the rules.
-- Switched to the latest version of the GPT-3.5 model, that came out yesterday, and also added support for the new 16k variant with 4x the context length. All you need to switch is to define an input token limit greater then 2048. (It should work up to 8192, since HexaPA only does even split of input and output tokens for now.)
-- Rules can now be exported to JSON as preset (Unfinished feature, may change, and can not yet be used as presets...)
+### Version v0.2
+- Reference injection - It starts the prompt with a section definded on the "Rules" screen, which can be used to refer to the rules, thus the AI is more likely to follow the rules.
+- Switched to the latest version of the GPT-3.5 model, that came out yesterday, and also added support for the new 16k variant with 4x the context length. To switch to 16K variant, define an input token limit greater then 2048. (It should work up to 8192, since HexaPA only does even split of input and output tokens for now.)
+- Rules can now be exported to JSON as presets, but can not yet be used as presets. (Unfinished feature, may change...)
