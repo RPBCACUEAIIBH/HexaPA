@@ -104,9 +104,10 @@ Installed separately:
 
 
 ## Updating to V0.2:
-- If you coned the git repository, then do:
+- Export important conversations before updating, just in case not to loose them!
+- If you cloned the git repository, then do:
 ```
-git fetch origin main
+git pull origin main
 ```
 - else you will need to download and unzip the new version...
 - v0.2 requires also updating the OpenAI library, since it uses the latest model, and it's new 16k variant as well:
