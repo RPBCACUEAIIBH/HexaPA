@@ -86,8 +86,16 @@ class Communicate:
 					print (Message)
 				print ("")
 			try: # Just in case the key is deleted, or the service is down...
+				# I initially misunderstood... it's not an even split, the total tokens Input + Output tokens is capped at 4096 for gtp-3.5-turbo, and 16384 for the new gpt-3.5-turbo-16k
+				if MaxTokens > 2048: # FOR NOW! >> If the token limit is above half of max, it will switch to the new gtp-3.5-turbo-16k model. (It is more expensive, but allows 4x the amount of tokens.)
+					Model = AIModel + "-16k-0613"
+					if MaxTokens > 16384: # Capping the tokne
+						MaxTokens = 16384
+				else:
+					Model = AIModel + "-0613"
+				HL.Log ("Communicate.py: Using AI Model: " + Model, 'D', 4)
 				cls.Response_OpenAI = openai.ChatCompletion.create (
-					model = AIModel,
+					model = Model,
 					messages = Messages,
 					temperature = 0.2, # float, Range 0 to 2; 0 = Deterministic; 2 = Random
 					top_p = 0.95, # float, Range 0 to 1; 0.1 = top 10% of probability mass considered... 1 = anything goes

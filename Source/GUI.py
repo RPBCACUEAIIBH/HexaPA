@@ -371,7 +371,7 @@ class GUI:
 		self.MainWindow.MaxTokensLabel = None
 		self.MainWindow.MaxTokensLabel = Window.Label (self.MainWindow.MaxTokensFrame, 0, 0, "W", "Max Tokens (Rules + Context + Prompt combined):", Theme.BGColor, Anchor = "w", Width = None)
 		self.MainWindow.MaxTokensEntry = None
-		self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits input tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages.\n(GPT-3.5 accepts max 2048 tokens. Good idea to not exceed 1900 - 2000 tokens to account for the inaccuracy of the token counter.)")
+		self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits input tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages. (New: HexaPA now uses the new models that just came out yesterday and switches automatically to the 16K model if you set the max to more then 2048 tokens.)\n(GPT-3.5 accepts max 2048 tokens, but OpenAI just came out with a 16K variant, which accepts up to 8192 tokens. In reality 16384 total tokens Input + Output, but HexaPA only does half split for now...)")
 		
 		### Key bindings
 		self.SpaceBinding = self.Window.bind ('<space>', lambda event: self.MainWindow.Subject.focus ())
@@ -456,7 +456,7 @@ class GUI:
 		Messages.append (Prompt)
 		
 		# Calculate remaining tokens for context
-		T = Tokenizer ("OpenAI", "gpt-3.5-turbo", Messages)
+		T = Tokenizer (self.S.API, self.S.AIModel, Messages)
 		MaxContextTokens = self.S.MaxTokens - T.TokenCount_Rules - T.TokenCount_Prompt
 		HL.Log ("GUI.py: MaxTokens allowed: " + str (self.S.MaxTokens) + ", Estimated rules tokens: " + str (T.TokenCount_Rules) + ", Estimated prompt tokens: " + str (T.TokenCount_Prompt) + " --> MaxContextTokens " + str (MaxContextTokens) + ", MaxContextMessages: " + str (self.S.MaxContextMsg), 'D', 2)
 		
@@ -469,7 +469,7 @@ class GUI:
 		if Context != None:
 			Messages.extend (Context)
 		Messages.append (Prompt)
-		T = Tokenizer ("OpenAI", "gpt-3.5-turbo", Messages)
+		T = Tokenizer (self.S.API, self.S.AIModel, Messages)
 		self.ChatWindow.StatsLabel.config (text = "Token estimations:   Total to send: " + str (T.TokenCount_Total) + "\nRules: " + str (T.TokenCount_Rules) + "   Context: " + str (T.TokenCount_Context) + "   Prompt: " + str (T.TokenCount_Prompt))
 		self.ChatWindow.StatsLabel.lift ()
 		self.Window.update ()
@@ -608,7 +608,7 @@ class GUI:
 		Messages.append (Prompt)
 		
 		# Calculate remaining tokens for context
-		T = Tokenizer ("OpenAI", "gpt-3.5-turbo", Messages)
+		T = Tokenizer (self.S.API, self.S.AIModel, Messages)
 		MaxContextTokens = self.S.MaxTokens - T.TokenCount_Rules - T.TokenCount_Prompt
 		HL.Log ("GUI.py: MaxTokens allowed: " + str (self.S.MaxTokens) + ", Estimated rules tokens: " + str (T.TokenCount_Rules) + ", Estimated prompt tokens: " + str (T.TokenCount_Prompt) + " --> MaxContextTokens " + str (MaxContextTokens) + ", MaxContextMessages: " + str (self.S.MaxContextMsg), 'D', 2)
 		
@@ -624,7 +624,7 @@ class GUI:
 		if Context != None:
 			Messages.extend (Context)
 		Messages.append (Prompt)
-		T = Tokenizer ("OpenAI", "gpt-3.5-turbo", Messages)
+		T = Tokenizer (self.S.API, self.S.AIModel, Messages)
 		self.ChatWindow.StatsLabel.config (text = "Token estimations:   Total to send: " + str (T.TokenCount_Total) + "\nRules: " + str (T.TokenCount_Rules) + "   Context: " + str (T.TokenCount_Context) + "   Prompt: " + str (T.TokenCount_Prompt))
 		self.Window.update ()
 		
@@ -639,7 +639,7 @@ class GUI:
 		self.ChatWindow.Messages[PromptIndex].MessageData.BlockID = self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID
 		
 		### Send message then display and recod response to new block
-		Response = Communicate.AskTheAI ("OpenAI", "gpt-3.5-turbo", Rules, Context, Prompt) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
+		Response = Communicate.AskTheAI (self.S.API, self.S.AIModel, Rules, Context, Prompt, self.S.MaxTokens) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
 		ErrorText = None
 		if not isinstance (Response, openai.openai_object.OpenAIObject):
 			ErrorText = "Error: API did not respond. The servere is probably overloaded... If this problem persist, check the Log.log file for more information."
@@ -683,7 +683,7 @@ class GUI:
 			Context = [{"role": "user", "content": "What is the subject of the following message?\n\nMessage:\nGive me a sentence for testing my application."}, {"role": "assistant", "content": "Sentence request for testing."}] # This works with Content = None, but more reliable with an example. Otherwise it may start with "Subject: ", or "The subject of this..." which is not desirable.
 			Prompt = {"role": "user", "content": "What is the subject of the following message?\n\nMessage:\n" + FirstMsg.Message}
 			HL.Log ("GUI.py: Unspecified Subject! --> Asking the AI to summarize it in a sentence.", 'I', 2)
-			Response = Communicate.AskTheAI ("OpenAI", "gpt-3.5-turbo", SubjectDetectionRules, Context, Prompt) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
+			Response = Communicate.AskTheAI (self.S.API, self.S.AIModel, SubjectDetectionRules, Context, Prompt) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
 			if isinstance (Response, openai.openai_object.OpenAIObject): # AI Respose
 				self.Conversation.Subject = Response['choices'][0]['message']['content']
 				HL.Log ("GUI.py: AI said the subject is: " + self.Conversation.Subject, "I", 2)

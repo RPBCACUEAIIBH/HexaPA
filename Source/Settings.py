@@ -8,12 +8,14 @@ from HexaLibPython import HexaLog as HL
 
 class Settings:
 	SettingsFile = ".Settings.bin"
-	SoftwareVersion = 0.1 # These should not be loaded, to avoid using old version when updated...
+	SoftwareVersion = 0.2 # These should not be loaded, to avoid using old version when updated, but must be saved to check for old...
 	DataVersion = 0.2 # These should not be loaded, to avoid using old version when updated...
 	UserName = None
 	MaxContextMsg = 100 # Max Number of messages to send to the AI. (Multiples of 2 recommended.)
 	MaxTokens = 1900 # Max amount of total tokens.
 	AutoContext = True # Auto / selected context inclusion.
+	API = "OpenAI"
+	AIModel = "gpt-3.5-turbo" # For now...
 	
 	def __init__ (self, UserName = None):
 		if UserName != None:
@@ -28,6 +30,13 @@ class Settings:
 					self.MaxContextMsg = TempObj.MaxContextMsg
 					self.MaxTokens = TempObj.MaxTokens
 					self.AutoContext = TempObj.AutoContext
+					try:
+						if TempObj.SoftwareVersion == 0.2:
+							HL.Log ("Settings.py: HexaPA version: v" + str (self.SoftwareVersion), 'I', 8)
+							self.API = TempObj.API
+							self.AIModel = TempObj.AIModel
+					except:
+						pass
 			else:
 				HL.Log ("Settings.py: " + self.SettingsFile + " not found!", 'W', 8)
 	
@@ -38,6 +47,9 @@ class Settings:
 		TempObj.MaxContextMsg = self.MaxContextMsg
 		TempObj.MaxTokens = self.MaxTokens
 		TempObj.AutoContext = self.AutoContext
+		TempObj.SoftwareVersion = self.SoftwareVersion
+		TempObj.API = self.API
+		TempObj.AIModel = self.AIModel
 		HL.Log ("Settings.py: Saving settings!", 'I', 8)
 		with open (self.SettingsFile, "wb") as File:
 			pickle.dump (TempObj, File)
