@@ -169,7 +169,7 @@ class GUI:
 		self.K.Key_OpenAI = self.KeyRequestWindow.KeyEntry_OpenAI.get ().strip ()
 		if self.K.Key_OpenAI:
 			self.KeyRequestWindow.SubmitButton.configure (state = tk.DISABLED)
-			Communicate ("OpenAI", self.K.Key_OpenAI) # Test key
+			Communicate (self.S.API, self.S.AIModel, self.K.Key_OpenAI) # Test key
 			if Communicate.Disabled_OpenAI != True: # Key accepted
 				self.Window.unbind ('<Return>', self.EnterBinding)
 				self.Window.unbind ('<Escape>', self.EscBinding)

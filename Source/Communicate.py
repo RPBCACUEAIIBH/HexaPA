@@ -15,7 +15,7 @@ class Communicate:
 	
 	
 	@classmethod
-	def __init__ (cls, API, Key): # Support for other APIs are planned, for now it's only for OpenAI...
+	def __init__ (cls, API, AIModel, Key): # Support for other APIs are planned, for now it's only for OpenAI...
 		if API == "OpenAI":
 			try:
 				openai.api_key = Key
@@ -33,7 +33,7 @@ class Communicate:
 				HL.Log ("Communicate.py: Key accepted! The AI's test answer(Model: text-ada-001): " + Text, 'D', 4)
 			except Exception as e:
 				HL.Log (f"Communicate.py: An error occurred: {e}", 'E', 4)
-				HL.Log ("Falling back to 3.5-turbo", 'I', 4)
+				HL.Log ("Falling back to " + AIModel, 'I', 4)
 				HL.Log ("", 'I', 4) # HexaLog keeps the last line if the Log file is not finished to compress multiple of the same messages, so a different line flushes the error to file...
 				HL.LogToFile ("Log.log", False)
 				try: # Fallback option. More expensive, but still a fraction of a cent... Just in case they remove text-ada-001 model. (which is cheap and fast but not very useful...)
@@ -49,7 +49,7 @@ class Communicate:
 						}
 					]
 					cls.Response_OpenAI = openai.ChatCompletion.create (
-						model = "gpt-3.5-turbo",
+						model = AIModel,
 						messages = Messages,
 						temperature = 0, # Only give me what I asked for...
 						top_p = 0.1, # Consider only top 10% probabilities.
@@ -57,7 +57,7 @@ class Communicate:
 						max_tokens = 25, # no need to waste much tokens, although may not work properly... Not sure about the exact range, it usually consumes 19-23 tokens even when set to 1.
 						frequency_penalty = -2.0 # Focus on the task (hopefully...)
 					)
-					HL.Log ("Communicate.py: Key accepted! The AI's test answer(Model: gpt-3.5-turbo): " + cls.Response_OpenAI['choices'][0]['message']['content'], 'D', 4)
+					HL.Log ("Communicate.py: Key accepted! The AI's test answer(" + AIModel + "): " + cls.Response_OpenAI['choices'][0]['message']['content'], 'D', 4)
 				except Exception as e:
 					HL.Log (f"Communicate.py: An error occurred: {e}", 'E', 4)
 					HL.Log ("", 'E', 4) # HexaLog keeps the last line if the Log file is not finished to compress multiple of the same messages, so a different line flushes the error to file...

@@ -43,7 +43,7 @@ if PasswordAccepted == True:
 	UI.SetKeys (K) # New window created here...
 	if K.Key_OpenAI:
 		HL.HexaLog.Log ("Main: Testing OpenAI API key...", 'D', 1)
-		Source.Communicate (S.API, K.Key_OpenAI)
+		Source.Communicate (S.API, S.AIModel, K.Key_OpenAI)
 		if Source.Communicate.Disabled_OpenAI != True:
 			UI.Main ()
 		else:
