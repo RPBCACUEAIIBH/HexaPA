@@ -45,7 +45,8 @@ class Commands:
 			HL.Log ("Commands.py: Exporting conversation to: " + JSONFile, 'I', 9)
 			
 			### Export
-			Extract = {"Title": PresetTitle, "Description": "", "Block": Chain.Blocks[BlockID].DumpDict (Key)}
+			Extract = {"Title": PresetTitle, "Description": "", "Blocks": []} # Originally I planned to define just a Rules type block, but example context should be added as well.
+			Extract["Blocks"].append (Chain.Blocks[BlockID].DumpDict (Key))
 			
 			### Display
 			if Args.verbose or Args.debug:

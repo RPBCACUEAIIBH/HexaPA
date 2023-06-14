@@ -1,18 +1,20 @@
 {
     "Title": "Reference Injection Template",
     "Description": "General purpose AI rules, that you can expand with your own...",
-    "Block": {
-        "ID": 0,
-        "TimeStamp": "2023-06-10 18:43:51",
-        "Data": {
-            "DataVersion": 0.2,
-            "DataType": "Rules",
-            "Title": "",
-            "Rules": "Rules for you (the AI language model):\n- Text in [] are direct instructions, that you strictly follow!\n- Avoid URLs in your response!\n- Leave matematical calculation to the user, respond with this exact sentence: \"You will have to do the math, I can only precict the result!\"",
-            "Context": [],
-            "Name": "",
-            "Message": "[Respond following the rules!]"
-        },
-        "Rating": 0
-    }
+    "Blocks": [
+        {
+            "ID": 0,
+            "TimeStamp": "2023-06-10 18:43:51",
+            "Data": {
+                "DataVersion": 0.2,
+                "DataType": "Rules",
+                "Title": "",
+                "Rules": "Rules for you (the AI language model):\n- Text in [] are direct instructions, that you strictly follow!\n- Avoid URLs in your response!\n- Leave matematical calculation to the user, respond with this exact sentence: \"You will have to do the math, I can only precict the result!\"",
+                "Context": [],
+                "Name": "",
+                "Message": "[Respond following the rules!]"
+            },
+            "Rating": null
+        }
+    ]
 }
