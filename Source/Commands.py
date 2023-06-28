@@ -36,23 +36,72 @@ class Commands:
 	
 	
 	@staticmethod
+	def ImportChatJSON (Key, Chain, JSONFile): # This can load an entire chain, or an extracted portion as long as order is kept, and all referenced blocks are found.
+		# Initial stuff...
+		with open (JSONFile) as File:
+			RawData = json.load (File)
+		
+		Blocks = RawData["Blocks"]
+		BlockMapping = {}
+		
+		# Subject, CreationTime, and File
+		Chain.Subject = RawData["Subject"]
+		Chain.CreationTime = RawData["CreationTime"]
+		if Chain.File == None:
+			Chain.File = "Conversations/" + re.sub ('[\W_]+', '_', Chain.CreationTime) + ".bin"
+			if os.path.exists (Chain.File):
+				HL.Log ("Commands.py: File " + Chain.File + " already exists. Aborting import operation!", 'E', 9)
+				Chain.File = None
+				return
+			else:
+				HL.Log ("Commands.py: Chat will be saved to: " + Chain.File, 'D', 9)
+		
+		for Block in Blocks:
+			# Map old IDs to new IDs
+			BlockMapping[Block["ID"]] = len (Chain.Blocks)
+			
+			# Import Data
+			BlockData = Data ()
+			BlockData.ImportDict (Block["Data"])
+			
+			# Set new Rules ID
+			if BlockData.DataType == "Message" and BlockData.Name != "HexaPA":
+				BlockData.Rules = Chain.LatestRules
+			
+			# Set new context IDs
+			NewList = []
+			for ContextID in BlockData.Context:
+				NewList.append (BlockMapping[ContextID])
+			BlockData.Context = NewList
+			
+			# Add to chain...
+			Chain.ImportBlock (Block["TimeStamp"], BlockData.Dump (Key), Block["Rating"])
+			#Chain.Blocks[len (Chain.Blocks) - 1].Sign ()
+			
+			# Update LatestRules ID...
+			if BlockData.DataType == "Rules":
+				Chain.LatestRules = Chain.Blocks[len (Chain.Blocks) - 1].BlockID
+	
+	
+	
+	@staticmethod
 	def ExportRulesJSON (Key, Chain, BlockID, PresetTitle):
 		if len (Chain.Blocks) > 0:
-			### Create Export dir and filename...
+			# Create Export dir and filename...
 			if not os.path.exists ("Presets/UserPresets"):
 				os.makedirs ("Presets/UserPresets")
 			JSONFile = "Presets/UserPresets/" + re.sub ('[\W_]+', '_', PresetTitle) + ".json"
 			HL.Log ("Commands.py: Exporting conversation to: " + JSONFile, 'I', 9)
 			
-			### Export
+			# Export
 			Extract = {"Title": PresetTitle, "Description": "", "Blocks": []} # Originally I planned to define just a Rules type block, but example context should be added as well.
 			Extract["Blocks"].append (Chain.Blocks[BlockID].DumpDict (Key))
 			
-			### Display
+			# Display
 			if Args.verbose or Args.debug:
 				print (json.dumps (Extract, indent = 4))
 			
-			### Save to file
+			# Save to file
 			with open (JSONFile, 'w') as File:
 				json.dump (Extract, File, indent = 4)
 	

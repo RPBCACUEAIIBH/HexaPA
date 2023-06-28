@@ -42,8 +42,22 @@ class BlockChain:
 			Validity = self.Validate ()
 			if Validity == True:
 				self.Blocks.append (DataBlock (len (self.Blocks), datetime.datetime.now ().strftime ("%Y-%m-%d %H:%M:%S"), Data, self.Blocks[len (self.Blocks) - 1].Hash ()))
-		self.Blocks[0].Sign ()
+		self.Blocks[len (self.Blocks) - 1].Sign ()
 		HL.Log ("BlockChain.py: New block created!", "D", self.LogTrace)
+	
+	
+	
+	def ImportBlock (self, TimeStamp, Data, Rating): # Create new conversation
+		if len (self.Blocks) == 0:
+			self.Blocks.append (DataBlock (len (self.Blocks), TimeStamp, Data, ""))
+			self.Blocks[len (self.Blocks) - 1].Rating = Rating
+		else:
+			Validity = self.Validate ()
+			if Validity == True:
+				self.Blocks.append (DataBlock (len (self.Blocks), TimeStamp, Data, self.Blocks[len (self.Blocks) - 1].Hash ()))
+				self.Blocks[len (self.Blocks) - 1].Rating = Rating
+		self.Blocks[len (self.Blocks) - 1].Sign ()
+		HL.Log ("BlockChain.py: New block imported!", "D", self.LogTrace)
 	
 	
 	

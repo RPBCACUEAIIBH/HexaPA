@@ -30,12 +30,12 @@ class GUI:
 		self.S = SettingsObject
 		self.Window = tk.Tk (className = "HexaPA") # Not sure why the className is displayed as "HexaPA" instead of "HexaPA" as I set it... (on ubuntu)
 		self.Window.title ("HexaPA")
-		WinWidth = 640
-		WinHeight = self.Window.winfo_screenheight()
-		PosX = self.Window.winfo_screenwidth() - WinWidth
-		PosY = 0
-		HL.Log ("GUI.py: WindowSize: " + str (WinWidth) + " x " + str (WinHeight) + "; PosX: " + str (PosX) + "; PosY: " + str (PosY), 'D', 2)
-		self.Window.geometry (f"{WinWidth}x{WinHeight}+{PosX}+{PosY}")
+		self.WinWidth = 640
+		self.WinHeight = self.Window.winfo_screenheight ()
+		self.WinPosX = self.Window.winfo_screenwidth () - self.WinWidth
+		self.WinPosY = 0
+		HL.Log ("GUI.py: WindowSize: " + str (self.WinWidth) + " x " + str (self.WinHeight) + "; PosX: " + str (self.WinPosX) + "; PosY: " + str (self.WinPosY), 'D', 2)
+		self.Window.geometry (f"{self.WinWidth}x{self.WinHeight}+{self.WinPosX}+{self.WinPosY}")
 		self.Window.resizable (True, True)
 		self.Window.configure (bg = Theme.BGColor)
 		self.Window.columnconfigure (0, weight = 1)
@@ -55,6 +55,10 @@ class GUI:
 	
 	
 	def SetKeys (self, KeysObject): # Called once after password request screen. This destroys the first window to do something outside the GUI class.
+		try:
+			self.Window.destroy ()
+		except:
+			pass
 		if KeysObject.UserKey:
 			self.K = KeysObject
 			self.Window = tk.Tk (className = "HexaPA") # Not sure why the className is displayed as "HexaPA" instead of "HexaPA" as I set it... (on ubuntu)
@@ -96,13 +100,9 @@ class GUI:
 			self.S.UserName = self.PasswordRequestWindow.UserNameEntry.get ().strip ()
 			self.S.SaveSettings ()
 		self.PWD = self.PasswordRequestWindow.PasswordEntry.get ().strip ()
-		self.WinWidth = None
 		self.WinWidth = self.Window.winfo_width ()
-		self.WinHeight = None
 		self.WinHeight = self.Window.winfo_height ()
-		self.WinPosX = None
 		self.WinPosX = self.Window.winfo_x ()
-		self.WinPosY = None
 		self.WinPosY = self.Window.winfo_y ()
 		self.Window.destroy ()
 	

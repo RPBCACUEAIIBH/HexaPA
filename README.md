@@ -93,6 +93,7 @@ These should be included with your python3 installation:
 - hashlib (for hashing)
 - base64 (for encoding encryption key)
 - gzip (for text compression)
+- getpass (for Requesting password in CLI)
 
 Installed separately:
 - tkinter (for GUI)

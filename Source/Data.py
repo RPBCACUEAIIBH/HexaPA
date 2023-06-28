@@ -76,6 +76,46 @@ class Data:
 	
 	
 	
+	def ImportDict (self, Data, BlockID = None, Rating = 0):
+		self.BlockID = BlockID
+		
+		# Parse 0.1v data.
+		if Data["DataVersion"] == 0.1:
+			self.DataVersion = Data["DataVersion"]
+			self.DataType = Data["DataType"]
+			self.Title = Data["Title"]
+			self.Rules = Data["Rules"]
+			self.Context = Data["Context"]
+			self.Name = Data["Name"]
+			self.Message = Data["Message"]
+			self.Rating = Data["Rating"]
+		
+		# Parse 0.2v data.
+		elif Data["DataVersion"] == 0.2:
+			self.DataVersion = Data["DataVersion"]
+			self.DataType = Data["DataType"]
+			self.Title = Data["Title"]
+			self.Rules = Data["Rules"]
+			self.Context = Data["Context"]
+			self.Name = Data["Name"]
+			self.Message = Data["Message"]
+			# Upon further consideration Rating is subject to change, and must not influence block validity...
+			self.Rating = Rating # This must be kept part of the Data object, but loaded from the block directly rather then parsed from the hashed string. (Make sure to save it!)
+		
+		# Default (if the data is no longer supported, or created with a newer version it should be initialized with default values.)
+		else:
+			HL.Log ("Data.py: Block content can not be parsed! Either no longer supported, or created with a newer version. DO NOT USE --renew-data option! (That may overwrite any data in this block!)", 'E', 7)
+			self.DataVersion = Settings.DataVersion
+			self.DataType = "Message"
+			self.Title = ""
+			self.Rules = ""
+			self.Context = []
+			self.Name = "ERROR"
+			self.Message = "Unknown data version. Either very old data (no longer supported) or created with a newer version of the program(not yet available in this version...)\nDO NOT USE --renew-data option! (That may overwrite any data in this block!)"
+			self.Rating = "Normal"
+	
+	
+	
 	def Dump (self, Key): # This should always dump data according to the latest version.
 		F = Fernet (Key)
 		Data = self.DumpDict ()
