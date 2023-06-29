@@ -25,10 +25,10 @@ OptionDescription = Designation + " v" + str (Settings.SoftwareVersion) + " - " 
 
 Parser = argparse.ArgumentParser (description = OptionDescription)
 Parser.add_argument ('--version', action = 'store_true', help = 'Print version and licensing.')
-Parser.add_argument('-u', '--user', type = str, help = 'Enter username.')
-Parser.add_argument('-p', '--password', type = str, help = 'Enter password.')
+Parser.add_argument ('-u', '--user', type = str, help = 'Enter username. (Only for scripting... Changing username still not implemented, it will cause crash, since your API key is encrytped with the old username and password.)')
+Parser.add_argument ('-p', '--password', type = str, help = 'Enter password. (Not recommended! It\'s only for scripting...)')
 Parser.add_argument ('--openai-key', type = str, help='Specify OpenAI API Key.')
-Parser.add_argument('--import-chat', type = str, help = 'Import conversation from JSON. (Takes path/file.json file as argument.)')
+Parser.add_argument ('--import-chat', type = str, help = 'Import conversation from JSON. (Takes path/file.json file as argument.)')
 Parser.add_argument ('--renew-data', action = 'store_true', help = 'Converts all blocks in the chain to new data version when loading existing conversation, rather then continuing old chain with new version data. (It is slow, and re-writes old AND new data since different blocks may contain different version data in the same chain. Use this once for each existing conversation if you see a warning messages after update...')
 Parser.add_argument ('-v', '--verbose', action = 'store_true', help = 'Verbose output.')
 Parser.add_argument ('--debug', action = 'store_true', help = argparse.SUPPRESS) # Not shown just in case I forget something I shouldn't in the code... ;)

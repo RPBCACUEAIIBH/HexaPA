@@ -62,9 +62,10 @@ class CLI:
 				sys.exit ()
 		
 		if Args.openai_key:
-			if self.K != None:
-				self.K.Key_OpenAI = Args.openai_key
-				self.K.SaveKeys ()
+			if self.K == None:
+				self.RequestPassword ()
+			self.K.Key_OpenAI = Args.openai_key
+			self.K.SaveKeys ()
 		
 		if Args.import_chat:
 			if self.K == None:
