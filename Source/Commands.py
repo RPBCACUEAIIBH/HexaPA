@@ -25,13 +25,13 @@ class Commands:
 			for Block in Chain.Blocks:
 				Extract["Blocks"].append (Block.DumpDict (Key))
 			
-			### Display
-			if Args.verbose or Args.debug:
-				print (json.dumps (Extract, indent = 4))
-			
 			### Save to file
 			with open (JSONFile, 'w') as File:
 				json.dump (Extract, File, indent = 4)
+			
+			### Display
+			if Args.verbose or Args.debug: # FIX THIS !!! Sometimes I just cloned a new instance of HexaPA on the same machine, and the second instance gives an error for Args, the first doesn't, there doesn't seem to be a difference... I put this at the end so that at least it should save the file before error...
+				print (json.dumps (Extract, indent = 4))
 	
 	
 	
