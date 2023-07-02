@@ -30,7 +30,7 @@ class Commands:
 				json.dump (Extract, File, indent = 4)
 			
 			### Display
-			if Args.verbose or Args.debug: # FIX THIS !!! Sometimes I just cloned a new instance of HexaPA on the same machine, and the second instance gives an error for Args, the first doesn't, there doesn't seem to be a difference... I put this at the end so that at least it should save the file before error...
+			if Args.verbose or Args.debug: # FIX THIS !!! I cloned another instance of HexaPA on the same machine, same OS, same user, neither is running in venv, and the second instance gives an Args is not defined error, the first one doesn't, no difference in the code I'm at the same branch, same commit for both... (I put this at the end so that at least it should save the file before error...)
 				print (json.dumps (Extract, indent = 4))
 	
 	
@@ -97,13 +97,13 @@ class Commands:
 			Extract = {"Title": PresetTitle, "Description": "", "Blocks": []} # Originally I planned to define just a Rules type block, but example context should be added as well.
 			Extract["Blocks"].append (Chain.Blocks[BlockID].DumpDict (Key))
 			
-			# Display
-			if Args.verbose or Args.debug:
-				print (json.dumps (Extract, indent = 4))
-			
 			# Save to file
 			with open (JSONFile, 'w') as File:
 				json.dump (Extract, File, indent = 4)
+			
+			# Display
+			if Args.verbose or Args.debug: # FIX THIS !!! I cloned another instance of HexaPA on the same machine, same OS, same user, neither is running in venv, and the second instance gives an Args is not defined error, the first one doesn't, no difference in the code I'm at the same branch, same commit for both... (I put this at the end so that at least it should save the file before error...)
+				print (json.dumps (Extract, indent = 4))
 	
 	
 	
