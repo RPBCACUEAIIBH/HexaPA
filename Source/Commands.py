@@ -30,8 +30,8 @@ class Commands:
 				json.dump (Extract, File, indent = 4)
 			
 			### Display
-			if Args.verbose or Args.debug: # FIX THIS !!! I cloned another instance of HexaPA on the same machine, same OS, same user, neither is running in venv, and the second instance gives an Args is not defined error, the first one doesn't, no difference in the code I'm at the same branch, same commit for both... (I put this at the end so that at least it should save the file before error...)
-				print (json.dumps (Extract, indent = 4))
+			#if Args.verbose or Args.debug: # FIX THIS !!! I cloned another instance of HexaPA on the same machine, same OS, same user, neither is running in venv, and the second instance gives an Args is not defined error, the first one doesn't, no difference in the code I'm at the same branch, same commit for both... (I put this at the end so that at least it should save the file before error...)
+			#	print (json.dumps (Extract, indent = 4))
 	
 	
 	
@@ -91,7 +91,7 @@ class Commands:
 			if not os.path.exists ("Presets/UserPresets"):
 				os.makedirs ("Presets/UserPresets")
 			JSONFile = "Presets/UserPresets/" + re.sub ('[\W_]+', '_', PresetTitle) + ".json"
-			HL.Log ("Commands.py: Exporting conversation to: " + JSONFile, 'I', 9)
+			HL.Log ("Commands.py: Exporting rules to: " + JSONFile, 'I', 9)
 			
 			# Export
 			Extract = {"Title": PresetTitle, "Description": "", "Blocks": []} # Originally I planned to define just a Rules type block, but example context should be added as well.
@@ -102,8 +102,8 @@ class Commands:
 				json.dump (Extract, File, indent = 4)
 			
 			# Display
-			if Args.verbose or Args.debug: # FIX THIS !!! I cloned another instance of HexaPA on the same machine, same OS, same user, neither is running in venv, and the second instance gives an Args is not defined error, the first one doesn't, no difference in the code I'm at the same branch, same commit for both... (I put this at the end so that at least it should save the file before error...)
-				print (json.dumps (Extract, indent = 4))
+			#if Args.verbose or Args.debug: # FIX THIS !!! I cloned another instance of HexaPA on the same machine, same OS, same user, neither is running in venv, and the second instance gives an Args is not defined error, the first one doesn't, no difference in the code I'm at the same branch, same commit for both... (I put this at the end so that at least it should save the file before error...)
+			#	print (json.dumps (Extract, indent = 4))
 	
 	
 	
