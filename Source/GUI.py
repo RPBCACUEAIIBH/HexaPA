@@ -255,6 +255,10 @@ class GUI:
 		self.Window.unbind ('<Return>', self.EnterBinding)
 		self.S.MaxContextMsg = int (self.MainWindow.MaxContextMsgEntry.get ())
 		self.S.MaxTokens = int (self.MainWindow.MaxTokensEntry.get ())
+		self.S.Temperature = float (self.MainWindow.TempEntry.get ())
+		self.S.TopP = float (self.MainWindow.TopPEntry.get ())
+		self.S.PresencePenalty = float (self.MainWindow.PresPEntry.get ())
+		self.S.FrequencyPenalty = float (self.MainWindow.FreqPEntry.get ())
 		self.Conversation.Subject = self.MainWindow.Subject.get ()
 		if self.Conversation.Subject != "Enter the subject here... (optional)" and self.Conversation.Subject != "":
 			HL.Log ("GUI.py: Creating new conversation with subject: " + self.Conversation.Subject, 'I', 2)
@@ -269,6 +273,10 @@ class GUI:
 		self.Window.unbind ('<Return>', self.EnterBinding)
 		self.S.MaxContextMsg = int (self.MainWindow.MaxContextMsgEntry.get ())
 		self.S.MaxTokens = int (self.MainWindow.MaxTokensEntry.get ())
+		self.S.Temperature = float (self.MainWindow.TempEntry.get ())
+		self.S.TopP = float (self.MainWindow.TopPEntry.get ())
+		self.S.PresencePenalty = float (self.MainWindow.PresPEntry.get ())
+		self.S.FrequencyPenalty = float (self.MainWindow.FreqPEntry.get ())
 		HL.Log ("GUI.py: Loading: " + str (self.MainWindow.ConversationList[ArgList[0]].File), 'I', 2)
 		self.Conversation.Load (self.MainWindow.ConversationList[ArgList[0]].File)
 		self.MainWindow.Base.grid_forget ()
@@ -372,6 +380,42 @@ class GUI:
 		self.MainWindow.MaxTokensLabel = Window.Label (self.MainWindow.MaxTokensFrame, 0, 0, "W", "Max Tokens (Rules + Context + Prompt combined):", Theme.BGColor, Anchor = "w", Width = None)
 		self.MainWindow.MaxTokensEntry = None
 		self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits input tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages. (New: HexaPA now uses the new models that just came out yesterday and switches automatically to the 16K model if you set the max to more then 2048 tokens.)\n(GPT-3.5 accepts max 2048 tokens, but OpenAI just came out with a 16K variant, which accepts up to 8192 tokens. In reality 16384 total tokens Input + Output, but HexaPA only does half split for now...)")
+		
+		## Temperature
+		self.MainWindow.TempFrame = None
+		self.MainWindow.TempFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 3, Column = 0, PadY = 0, Sticky = "W")
+		self.MainWindow.TempFrame.columnconfigure (1, weight = 1)
+		self.MainWindow.TempLabel = None
+		self.MainWindow.TempLabel = Window.Label (self.MainWindow.TempFrame, 0, 0, "W", "Temperature (Float):", Theme.BGColor, Anchor = "w", Width = None)
+		self.MainWindow.TempEntry = None
+		self.MainWindow.TempEntry = Window.Entry (self.MainWindow.TempFrame, 0, 1, "EW", Text = str (self.S.Temperature), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Determines the likelyness of same result twice for the same question. Range 0.0 to 2.0 (Default = 1.0, Deterministic = 0.0, Random = 2.0, Recommended to adjust either this or top percentage.)")
+		
+		## TopP
+		self.MainWindow.TopPFrame = None
+		self.MainWindow.TopPFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 4, Column = 0, PadY = 0, Sticky = "W")
+		self.MainWindow.TopPFrame.columnconfigure (1, weight = 1)
+		self.MainWindow.TopPLabel = None
+		self.MainWindow.TopPLabel = Window.Label (self.MainWindow.TopPFrame, 0, 0, "W", "Top Percentage (Float):", Theme.BGColor, Anchor = "w", Width = None)
+		self.MainWindow.TopPEntry = None
+		self.MainWindow.TopPEntry = Window.Entry (self.MainWindow.TopPFrame, 0, 1, "EW", Text = str (self.S.TopP), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "The AI considers top percentage of most probable answers. Range 0.0 to 1.0 (Default = 1.0, Deterministic = 0.0, Random = 1.0, Recommended to adjust either this or temperature.)")
+		
+		## Presence Penalty
+		self.MainWindow.PresPFrame = None
+		self.MainWindow.PresPFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 5, Column = 0, PadY = 0, Sticky = "W")
+		self.MainWindow.PresPFrame.columnconfigure (1, weight = 1)
+		self.MainWindow.PresPLabel = None
+		self.MainWindow.PresPLabel = Window.Label (self.MainWindow.PresPFrame, 0, 0, "W", "Presence Penalty (Float):", Theme.BGColor, Anchor = "w", Width = None)
+		self.MainWindow.PresPEntry = None
+		self.MainWindow.PresPEntry = Window.Entry (self.MainWindow.PresPFrame, 0, 1, "EW", Text = str (self.S.PresencePenalty), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics. Range -2.0 to 2.0 (Default = 0.0)")
+		
+		## Frequency Penalty
+		self.MainWindow.FreqPFrame = None
+		self.MainWindow.FreqPFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 6, Column = 0, PadY = 0, Sticky = "W")
+		self.MainWindow.FreqPFrame.columnconfigure (1, weight = 1)
+		self.MainWindow.FreqPLabel = None
+		self.MainWindow.FreqPLabel = Window.Label (self.MainWindow.FreqPFrame, 0, 0, "W", "Frequency Penalty (Float):", Theme.BGColor, Anchor = "w", Width = None)
+		self.MainWindow.FreqPEntry = None
+		self.MainWindow.FreqPEntry = Window.Entry (self.MainWindow.FreqPFrame, 0, 1, "EW", Text = str (self.S.FrequencyPenalty), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim. Range -2.0 to 2.0 (Default = 0.0)")
 		
 		### Key bindings
 		self.SpaceBinding = self.Window.bind ('<space>', lambda event: self.MainWindow.Subject.focus ())
@@ -639,7 +683,7 @@ class GUI:
 		self.ChatWindow.Messages[PromptIndex].MessageData.BlockID = self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID
 		
 		### Send message then display and recod response to new block
-		Response = Communicate.AskTheAI (self.S.API, self.S.AIModel, Rules, Context, Prompt, self.S.MaxTokens) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
+		Response = Communicate.AskTheAI (self.S.API, self.S.AIModel, Rules, Context, Prompt, self.S.MaxTokens, self.S.Temperature, self.S.TopP, self.S.PresencePenalty, self.S.FrequencyPenalty) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
 		ErrorText = None
 		if not isinstance (Response, openai.openai_object.OpenAIObject):
 			ErrorText = "Error: API did not respond. The servere is probably overloaded... If this problem persist, check the Log.log file for more information."

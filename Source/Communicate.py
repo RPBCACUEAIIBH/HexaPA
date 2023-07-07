@@ -68,7 +68,7 @@ class Communicate:
 	
 	
 	@classmethod
-	def AskTheAI (cls, API, AIModel, Rules, Context, Prompt, MaxTokens = 2048): # Rules and Context can be None...
+	def AskTheAI (cls, API, AIModel, Rules, Context, Prompt, MaxTokens = 2048, Temperature = 0.2, TopP = 0.95, PresencePenalty = 0.0, FrequencyPenalty = 0.0): # Rules and Context can be None...
 		if API == "OpenAI": # Other APIs are planned to be supported, for now it's only for OpenAI...
 			Messages = []
 			if Rules == None:
@@ -97,12 +97,12 @@ class Communicate:
 				cls.Response_OpenAI = openai.ChatCompletion.create (
 					model = Model,
 					messages = Messages,
-					temperature = 0.2, # float, Range 0 to 2; 0 = Deterministic; 2 = Random
-					top_p = 0.95, # float, Range 0 to 1; 0.1 = top 10% of probability mass considered... 1 = anything goes
+					temperature = Temperature, # float, Range 0 to 2; 0 = Deterministic; 2 = Random
+					top_p = TopP, # float, Range 0 to 1; 0.1 = top 10% of probability mass considered... 1 = anything goes
 					n = 1, # int, How many messages to generate
 					max_tokens = MaxTokens, # int, Range 1 - 2048
-					presence_penalty = 0.0, # float, Range -2 to 2; Loop rejection
-					frequency_penalty = 0.0 # float, Range -2 to 2; -2 = ASD (Hyperfocus) vs 2 = ADHD (Creativity)
+					presence_penalty = PresencePenalty, # float, Range -2 to 2; Loop rejection
+					frequency_penalty = FrequencyPenalty # float, Range -2 to 2; -2 = ASD (Hyperfocus) vs 2 = ADHD (Creativity)
 					#user = "Unspecified" # optional, (I guess it's for companies with multiple users using the same account. May cost some extra tokens multiple times / message...)
 				)
 				HL.Log ("Communicate.py: The AI responded!", 'D', 4)
