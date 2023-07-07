@@ -123,3 +123,9 @@ pip install --upgrade openai
 - Reference injection - It starts the prompt with a section definded on the "Rules" screen, which can be used to refer to the rules, thus the AI is more likely to follow the rules.
 - Switched to the latest version of the GPT-3.5 model, that came out yesterday, and also added support for the new 16k variant with 4x the context length. To switch to 16K variant, define an input token limit greater then 2048. (It should work up to 8192, since HexaPA only does even split of input and output tokens for now.)
 - Rules can now be exported to JSON as presets, but can not yet be used as presets. (Unfinished feature, may change...)
+
+### Version v0.3
+- I've added GPT-4 support (Not tested, since I'm still using my 5$ allowance, so I still don't have access...) - GPT-4 with 8K context is out but only for paying customers (2 days ago). GPT-4 with 32K context is expected by the end of July and access for anyone in a few months perhaps.
+- More settings - Added Model, Temperature, Top Percentage, Presence Penalty, and Frequency Penalty settigns. (Tested, didn't got any errors, except on gpt-4 but didn't play much with it.)
+- Bug fixes - Fixed some chat and rules preset export bugs, and a block chain bug.
+- Import chat option - Added --user, --password and --import-chat options, so exported chat can now be imported from json... (The --user and --password options work, but there is no practical use for them yet. It's for scripting, but CLI function is incomplete at the moment...)
