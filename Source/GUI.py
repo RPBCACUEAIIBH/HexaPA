@@ -50,6 +50,9 @@ class GUI:
 		self.RBinding = None
 		self.CtrlEnterBinding = None
 		self.CtrlRBinding = None
+		self.CtrlShiftRBinding = None
+		self.CtrlShiftHBinding = None
+		self.CtrlABinding = None # [Ctrl] + [A] for selecting all text in focused textbox... (everywhere...)
 		
 	
 	
@@ -104,6 +107,13 @@ class GUI:
 		self.WinHeight = self.Window.winfo_height ()
 		self.WinPosX = self.Window.winfo_x ()
 		self.WinPosY = self.Window.winfo_y ()
+		self.Window.unbind ('<Return>', self.EnterBinding)
+		self.Window.unbind ('<Escape>', self.EscBinding)
+		self.Window.unbind ('<Control-H>', self.CtrlShiftHBinding)
+		if platform.system () != 'Darwin':
+			self.Window.unbind ('<Control-a>', self.CtrlABinding)
+		else:
+			self.Window.unbind ('<Command-a>', self.CtrlABinding)
 		self.Window.destroy ()
 	
 	
@@ -158,6 +168,11 @@ class GUI:
 		# Key bindings
 		self.EnterBinding = self.Window.bind ('<Return>', lambda event: self.PasswordRequestWindow.SubmitButton.invoke ())
 		self.EscBinding = self.Window.bind ('<Escape>', lambda event: self.Window.destroy ())
+		self.CtrlShiftHBinding = self.Window.bind ('<Control-H>', lambda event: self.PasswordRequestWindow.ShowButton.invoke ())
+		if platform.system () != 'Darwin':
+			self.CtrlABinding = self.Window.bind ('<Control-a>', lambda event: event.widget.select_range (0, 'end')) # [Ctrl / Cmd] + [A]
+		else:
+			self.CtrlABinding = self.Window.bind ('<Command-a>', lambda event: event.widget.select_range (0, 'end')) # [Ctrl / Cmd] + [A]
 	
 	
 	
@@ -173,6 +188,10 @@ class GUI:
 			if Communicate.Disabled_OpenAI != True: # Key accepted
 				self.Window.unbind ('<Return>', self.EnterBinding)
 				self.Window.unbind ('<Escape>', self.EscBinding)
+				if platform.system () != 'Darwin':
+					self.Window.unbind ('<Control-a>', self.CtrlABinding)
+				else:
+					self.Window.unbind ('<Command-a>', self.CtrlABinding)
 				self.K.SaveKeys ()
 				self.KeyRequestWindow.Base.grid_forget ()
 				self.Main ()
@@ -185,6 +204,10 @@ class GUI:
 	def KeyRequestSkipAction (self):
 		self.Window.unbind ('<Return>', self.EnterBinding)
 		self.Window.unbind ('<Escape>', self.EscBinding)
+		if platform.system () != 'Darwin':
+			self.Window.unbind ('<Control-a>', self.CtrlABinding)
+		else:
+			self.Window.unbind ('<Command-a>', self.CtrlABinding)
 		self.KeyRequestWindow.Base.grid_forget ()
 		self.Main ()
 	
@@ -244,6 +267,10 @@ class GUI:
 		# Key bindings
 		self.EnterBinding = self.Window.bind ('<Return>', lambda event: self.KeyRequestWindow.SubmitButton.invoke ())
 		self.EscBinding = self.Window.bind ('<Escape>', lambda event: self.KeyRequestWindow.SkipButton.invoke ())
+		if platform.system () != 'Darwin':
+			self.CtrlABinding = self.Window.bind ('<Control-a>', lambda event: event.widget.select_range (0, 'end')) # [Ctrl / Cmd] + [A]
+		else:
+			self.CtrlABinding = self.Window.bind ('<Command-a>', lambda event: event.widget.select_range (0, 'end')) # [Ctrl / Cmd] + [A]
 	
 	
 	
@@ -447,6 +474,10 @@ class GUI:
 		### Key bindings
 		self.SpaceBinding = self.Window.bind ('<space>', lambda event: self.MainWindow.Subject.focus ())
 		self.EnterBinding = self.Window.bind ('<Return>', lambda event: self.MainWindow.NewChatButton.invoke ())
+		if platform.system () != 'Darwin':
+			self.CtrlABinding = self.Window.bind ('<Control-a>', lambda event: event.widget.select_range (0, 'end')) # [Ctrl / Cmd] + [A]
+		else:
+			self.CtrlABinding = self.Window.bind ('<Command-a>', lambda event: event.widget.select_range (0, 'end')) # [Ctrl / Cmd] + [A]
 	
 	
 	
@@ -459,10 +490,14 @@ class GUI:
 		self.Window.unbind ('<Escape>', self.EscBinding)
 		if platform.system () != 'Darwin':
 			self.Window.unbind ('<Control-Return>', self.CtrlEnterBinding)
-			self.Window.unbind ('<Control-R>', self.CtrlRBinding)
+			self.Window.unbind ('<Control-r>', self.CtrlRBinding)
+			self.Window.unbind ('<Control-R>', self.CtrlShiftRBinding)
+			self.Window.unbind ('<Control-a>', self.CtrlABinding)
 		else:
 			self.Window.unbind ('<Command-Return>', self.CtrlEnterBinding)
-			self.Window.unbind ('<Command-R>', self.CtrlRBinding)
+			self.Window.unbind ('<Command-r>', self.CtrlRBinding)
+			self.Window.unbind ('<Command-R>', self.CtrlShiftRBinding)
+			self.Window.unbind ('<Command-a>', self.CtrlABinding)
 		if self.Conversation.File:
 			HL.Log ("GUI.py: Saving conversation!", 'I', 2)
 			# Update ratings so the conversation is loaded as left on exit. (This will only work if you return to Main before exiting.)
@@ -487,10 +522,14 @@ class GUI:
 		self.Window.unbind ('<Escape>', self.EscBinding)
 		if platform.system () != 'Darwin':
 			self.Window.unbind ('<Control-Return>', self.CtrlEnterBinding)
-			self.Window.unbind ('<Control-R>', self.CtrlRBinding)
+			self.Window.unbind ('<Control-r>', self.CtrlRBinding)
+			self.Window.unbind ('<Control-R>', self.CtrlShiftRBinding)
+			self.Window.unbind ('<Control-a>', self.CtrlABinding)
 		else:
 			self.Window.unbind ('<Command-Return>', self.CtrlEnterBinding)
-			self.Window.unbind ('<Command-R>', self.CtrlRBinding)
+			self.Window.unbind ('<Command-r>', self.CtrlRBinding)
+			self.Window.unbind ('<Command-R>', self.CtrlShiftRBinding)
+			self.Window.unbind ('<Command-a>', self.CtrlABinding)
 		self.ChatWindow.Base.grid_forget ()
 		self.Rules ()
 	
@@ -578,7 +617,7 @@ class GUI:
 			self.ChatWindow.Messages[Index].ButtonFrame = Window.Frame (self.ChatWindow.Messages[Index].AuthorFrame, Theme.PromptBG, 0, 1, Sticky = "NSE")
 			self.ChatWindow.Messages[Index].ButtonFrame.rowconfigure (0, weight = 1)
 			self.ChatWindow.Messages[Index].RephraseButton = None
-			self.ChatWindow.Messages[Index].RephraseButton = Window.Button (self.ChatWindow.Messages[Index].ButtonFrame, 0, 0, "NS", "Rephrase", lambda: (self.ChatWindow.UserInputTextBox.insert ('end', self.ChatWindow.Messages[Index].TextBox.get ("1.0", "end").strip ()), setattr (self.ChatWindow.Messages[Index].MessageData, 'Rating', -1), self.ChatWindow.Messages[Index].Exclude.set (True), self.ChatWindow.Messages[Index].Include.set (False), setattr (self.ChatWindow.Messages[Index + 1].MessageData, 'Rating', -1), self.ChatWindow.Messages[Index + 1].Exclude.set (True), self.ChatWindow.Messages[Index + 1].Include.set (False), self.ChatWindow.UserInputTextBox.focus ()), Width = 6, PadX = 0, PadY = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Shortcut for [Ctrl] + [C], [Ctrl] + [V] and exclusion of previous prompt and response.\nKind of a \"regenerate response\" button with optioal editing before sending.")
+			self.ChatWindow.Messages[Index].RephraseButton = Window.Button (self.ChatWindow.Messages[Index].ButtonFrame, 0, 0, "NS", "Rephrase", lambda: (self.ChatWindow.UserInputTextBox.insert ('end', self.ChatWindow.Messages[Index].TextBox.get ("1.0", "end").strip ()), setattr (self.ChatWindow.Messages[Index].MessageData, 'Rating', -1), self.ChatWindow.Messages[Index].Exclude.set (True), self.ChatWindow.Messages[Index].Include.set (False), setattr (self.ChatWindow.Messages[Index + 1].MessageData, 'Rating', -1), self.ChatWindow.Messages[Index + 1].Exclude.set (True), self.ChatWindow.Messages[Index + 1].Include.set (False), self.ChatWindow.UserInputTextBox.focus ()), Width = 6, PadX = 0, PadY = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Shortcut for [Ctrl] + [C], [Ctrl] + [V] and exclusion of this prompt and following response.\nKind of a \"regenerate response\" button with optioal editing before sending. Hotkey/combination(for the last prompt): [Ctrl] + [R]")
 		else:
 			self.ChatWindow.Messages.append (Window (self.ChatWindow.CanvasInnerFrame, BGColor = Theme.ResponseBG, Packed = True))
 			self.ChatWindow.Messages[Index].Base.columnconfigure (0, weight = 1)
@@ -813,7 +852,7 @@ class GUI:
 		self.ChatWindow.ExportButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 2, "E", "Export", self.ExportAction, Width = 5, Height = 1, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Export conversation data. (Unlike in ChatGPT you can see which rule block and which context blocks ware sent with any given prompt when you export the conversation, just in case you want to analyze it.)\n(JSON only! ...for now. Recommended to export important data before upgrading HexaPA to new version for now... It's in early alpha, it may not be stable.)")
 		self.ChatWindow.ExportButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
 		self.ChatWindow.RulesButton = None
-		self.ChatWindow.RulesButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 3, "E", "Rules", self.ChatRulesAction, Width = 5, Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Edit rules... (Experimental... The AI will use this as context but treats it more as recommendations. Examples help, old context may contain bad example to a radical change in rules, so use the exclude checkboxes or disable auto context for a while...)\nHotkey/combination: [Ctrl] + [R]")
+		self.ChatWindow.RulesButton = Window.Button (self.ChatWindow.SubjectFrame, 0, 3, "E", "Rules", self.ChatRulesAction, Width = 5, Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Edit rules... (Experimental... The AI will use this as context but treats it more as recommendations. Examples help, old context may contain bad example to a radical change in rules, so use the exclude checkboxes or disable auto context for a while...)\nHotkey/combination: [Ctrl] + [Shift] + [R]")
 		self.ChatWindow.RulesButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
 		
 		### Conversation canvas (This should be populated after the UI is fully constructed, otherwise autoscroll does not seem to scroll all the way to the bottom when continuig conversation...)
@@ -864,7 +903,7 @@ class GUI:
 		### Load conversation
 		try:
 			if len (self.Conversation.Blocks) == 0: # Reminder, in case there is no content yet...
-				Text = "Remember:\n- Clicking on a message enlarges it for easier reading.\n- The prompt + rules + context must be less then 2048 tokens!\n- The AI's answer may or may not fit into 2048 tokens, but it is limited to that by OpenAI!\n- It does not have the ability to remember! The rules and context you send, is all it has to work with!\n- It does not think! It simply reacts to the given text, generating a response.\n- Do not ask for a numerical answer, the AI is simply terrible at math! It guesses the answer based on it's probablility, rather then calculating it. (The current model at least...)\n- Be concise, don't argue with the AI if it doesn't give you the answer you want, because you pay for your argument as well as the AI's apology, and it may still not give you an acceptable answer! Instead tweak what rules, context, and prompt you send next!\n- It does not feel, so praising or cursing it only cost you money! (Still it's a good idea to be polite, just to avoid developing bad habits...)\n\n- OpenAI's current policy (as of 5th of May 2023) says that they don't use data form API calls for training. (...but off course every company leaves a clause in it's ToS to change anything anytime, so I advise against feeding it any sensitive information or code! Treat it with an \"Anything you say can be used against you!\" attitude!)\n\n- HexaPA is free and open source software, if you find it helpful please donate at: www.osrc.rip/Support.html"
+				Text = "Remember:\n- Clicking on a message enlarges it for easier reading.\n- It does not have the ability to remember! The rules and context you send, is all it has to work with!\n- It does not think! It simply reacts to the given text, generating a response.\n- Do not ask for a numerical answer, the AI is simply terrible at math! It guesses the answer based on it's probablility, rather then calculating it. (The current model at least...)\n- The model is somewhat biased towards leftist ideologies... Do not rely on it's answer in moral, religious, legal or financial questions!\n- Be concise, don't argue with the AI if it doesn't give you the answer you want, because you pay for your argument as well as the AI's apology, and it may still not give you an acceptable answer! Instead tweak what rules, context, and prompt you send next and perhaps other settings!\n- It does not feel, so praising or cursing it only cost you money! (Still it's a good idea to be polite, just to avoid developing bad habits...)\n\n- OpenAI's current policy (as of 5th of May 2023) says that they don't use data form API calls for training. (...but off course every company leaves a clause in it's ToS to change anything anytime, so I advise against feeding it any sensitive information or code! Treat it with an \"Anything you say can be used against you!\" attitude!)\n\nRecent changes:\n- [Ctrl/Cmd] + [A] selects text in the focused text/enry box.\n- [Ctrl/Cmd] + [R] now set to rephrase last prompt, and instead [Ctrl/Cmd] + [Shift] + [R] to enter the rules section.\n- [Ctrl/Cmd] + [Shift] + [H] can now be used to show/hide password.\n\n- HexaPA is free and open source software, if you find it helpful please donate at: www.osrc.rip/Support.html"
 				self.DisplayMessage ("Developer", Text)
 			else: # Conversation
 				if Args.renew_data: # Renew data...
@@ -922,10 +961,14 @@ class GUI:
 		self.EscBinding = self.Window.bind ('<Escape>', lambda event: self.ChatWindow.BackButton.invoke ())
 		if platform.system () != 'Darwin':
 			self.CtrlEnterBinding = self.Window.bind ('<Control-Return>', lambda event: self.ChatWindow.SendButton.invoke ()) # [Ctrl / Cmd] + [Enter]
-			self.CtrlRBinding = self.Window.bind ('<Control-r>', lambda event: self.ChatWindow.RulesButton.invoke ()) # [Ctrl / Cmd] + [R]
+			self.CtrlRBinding = self.Window.bind ('<Control-r>', lambda event: self.ChatWindow.Messages[len (self.ChatWindow.Messages) - 2].RephraseButton.invoke ()) # [Ctrl / Cmd] + [R]
+			self.CtrlShiftRBinding = self.Window.bind ('<Control-R>', lambda event: self.ChatWindow.RulesButton.invoke ()) # [Ctrl / Cmd] + [Shift] + [R]
+			self.CtrlABinding = self.Window.bind ('<Control-a>', lambda event: event.widget.tag_add ('sel', '1.0', 'end')) # [Ctrl / Cmd] + [A]
 		else:
 			self.CtrlEnterBinding = self.Window.bind ('<Command-Return>', lambda event: self.ChatWindow.SendButton.invoke ()) # [Ctrl / Cmd] + [Enter]
-			self.CtrlRBinding = self.Window.bind ('<Command-r>', lambda event: self.ChatWindow.RulesButton.invoke ()) # [Ctrl / Cmd] + [R]
+			self.CtrlRBinding = self.Window.bind ('<Command-r>', lambda event: self.ChatWindow.Messages[len (self.ChatWindow.Messages) - 2].RephraseButton.invoke ()) # [Ctrl / Cmd] + [R]
+			self.CtrlShiftRBinding = self.Window.bind ('<Command-R>', lambda event: self.ChatWindow.RulesButton.invoke ()) # [Ctrl / Cmd] + [Shift] + [R]
+			self.CtrlABinding = self.Window.bind ('<Command-a>', lambda event: event.widget.tag_add ('sel', '1.0', 'end')) # [Ctrl / Cmd] + [A]
 	
 	
 	
@@ -953,6 +996,10 @@ class GUI:
 	def RulesBackAction (self):
 		self.RulesUnbindSpace ()
 		self.Window.unbind ('<Escape>', self.EscBinding)
+		if platform.system () != 'Darwin':
+			self.Window.unbind ('<Control-a>', self.CtrlABinding)
+		else:
+			self.Window.unbind ('<Command-a>', self.CtrlABinding)
 		self.SaveRules ()
 		self.RulesWindow.Base.grid_forget ()
 		self.ChatWindow.Base.grid (padx = Theme.PadX, pady = Theme.PadY, sticky = "NSEW") # No need to generate the chat content each time... it's slow, and already generated...
@@ -961,10 +1008,14 @@ class GUI:
 		self.EscBinding = self.Window.bind ('<Escape>', lambda event: self.ChatWindow.BackButton.invoke ())
 		if platform.system () != 'Darwin':
 			self.CtrlEnterBinding = self.Window.bind ('<Control-Return>', lambda event: self.ChatWindow.SendButton.invoke ()) # [Ctrl / Cmd] + [Enter]
-			self.CtrlRBinding = self.Window.bind ('<Control-r>', lambda event: self.ChatWindow.RulesButton.invoke ()) # [Ctrl / Cmd] + [R]
+			self.CtrlRBinding = self.Window.bind ('<Control-r>', lambda event: self.ChatWindow.Messages[len (self.ChatWindow.Messages) - 2].RephraseButton.invoke ()) # [Ctrl / Cmd] + [R]
+			self.CtrlShiftRBinding = self.Window.bind ('<Control-R>', lambda event: self.ChatWindow.RulesButton.invoke ()) # [Ctrl / Cmd] + [Shift] + [R]
+			self.CtrlABinding = self.Window.bind ('<Control-a>', lambda event: event.widget.tag_add ('sel', '1.0', 'end')) # [Ctrl / Cmd] + [A]
 		else:
 			self.CtrlEnterBinding = self.Window.bind ('<Command-Return>', lambda event: self.ChatWindow.SendButton.invoke ()) # [Ctrl / Cmd] + [Enter]
-			self.CtrlRBinding = self.Window.bind ('<Command-r>', lambda event: self.ChatWindow.RulesButton.invoke ()) # [Ctrl / Cmd] + [R]
+			self.CtrlRBinding = self.Window.bind ('<Command-r>', lambda event: self.ChatWindow.Messages[len (self.ChatWindow.Messages) - 2].RephraseButton.invoke ()) # [Ctrl / Cmd] + [R]
+			self.CtrlShiftRBinding = self.Window.bind ('<Command-R>', lambda event: self.ChatWindow.RulesButton.invoke ()) # [Ctrl / Cmd] + [Shift] + [R]
+			self.CtrlABinding = self.Window.bind ('<Command-a>', lambda event: event.widget.tag_add ('sel', '1.0', 'end')) # [Ctrl / Cmd] + [A]
 		self.RulesWindow.Base.destroy ()
 	
 	
@@ -1105,7 +1156,10 @@ class GUI:
 		# Key binding...
 		self.SpaceBinding = self.Window.bind ('<space>', lambda event: self.RulesWindow.RulesInputTextBox.focus ())
 		self.EscBinding = self.Window.bind ('<Escape>', lambda event: self.RulesWindow.BackButton.invoke ())
-	
+		if platform.system () != 'Darwin':
+			self.CtrlABinding = self.Window.bind ('<Control-a>', lambda event: event.widget.tag_add ('sel', '1.0', 'end')) # [Ctrl / Cmd] + [A]
+		else:
+			self.CtrlABinding = self.Window.bind ('<Command-a>', lambda event: event.widget.tag_add ('sel', '1.0', 'end')) # [Ctrl / Cmd] + [A]
 	
 	
 	
