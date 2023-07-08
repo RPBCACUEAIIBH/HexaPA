@@ -32,18 +32,18 @@ if CLI.K != None:
 
 HL.HexaLog.Log ("Main: Opening GUI Window!", 'I', 1)
 UI = Source.GUI (S) # First window created here...
-if PasswordAccepted == False:
-	while True:
-		UI.PasswordRequest ()
-		UI.OpenWindow () # Open first window (This will be destroyed when the user inputs the password. This is the only way I could solve exitting the mainloop() to do something outside GUI calss.)
-		try:
-			HL.HexaLog.Log ("Main: Loading API Key(s)...", 'D', 1)
-			K = Source.Keys (S.UserName, UI.PWD)
-			if K.UserKey != K.IllegalKey:
-				PasswordAccepted = True
-			break
-		except:
-			HL.HexaLog.Log ("Main: Wrong password! Try again. :P", 'E', 1)
+while PasswordAccepted == False:
+	UI.PasswordRequest ()
+	UI.OpenWindow () # Open first window (This will be destroyed when the user inputs the password. This is the only way I could solve exitting the mainloop() to do something outside GUI calss.)
+	try:
+		HL.HexaLog.Log ("Main: Loading API Key(s)...", 'D', 1)
+		K = Source.Keys (S.UserName, UI.PWD)
+		if K.UserKey != K.IllegalKey:
+			PasswordAccepted = True
+		break
+	except:
+		HL.HexaLog.Log ("Main: Wrong password! Try again. :P", 'E', 1)
+		UI = Source.GUI (S) # First window re-created here otherwise can't try again...
 
 Conversation = None
 if PasswordAccepted == True:

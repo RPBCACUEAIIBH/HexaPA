@@ -127,5 +127,5 @@ pip install --upgrade openai
 ### Version v0.3
 - I've added GPT-4 support (Not tested, since I'm still using my 5$ allowance, so I still don't have access...) - GPT-4 with 8K context is out but only for paying customers (2 days ago). GPT-4 with 32K context is expected by the end of July and access for anyone in a few months perhaps.
 - More settings - Added Model, Temperature, Top Percentage, Presence Penalty, and Frequency Penalty settigns. (Tested, didn't got any errors, except on gpt-4 but didn't play much with it.)
-- Bug fixes - Fixed some chat and rules preset export bugs, and a block chain bug.
+- Bug fixe(s) - Fixed some chat and rules preset export bugs, destroyed window bug at wrong password entry and a block chain bug.
 - Import chat option - Added --user, --password and --import-chat options, so exported chat can now be imported from json... (The --user and --password options work, but there is no practical use for them yet. It's for scripting, but CLI function is incomplete at the moment...)
