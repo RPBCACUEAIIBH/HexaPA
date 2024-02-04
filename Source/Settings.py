@@ -12,7 +12,8 @@ class Settings:
 	DataVersion = 0.2 # These should not be loaded, to avoid using old version when updated...
 	UserName = None
 	MaxContextMsg = 100 # Max Number of messages to send to the AI. (Multiples of 2 recommended.)
-	MaxTokens = 1900 # Max amount of total tokens.
+	MaxTokens = 2048 # Max amount of Input tokens.
+	MaxOTokens = 512 # Max amount of Output tokens.
 	AutoContext = True # Auto / selected context inclusion.
 	API = "OpenAI"
 	AIModel = "gpt-3.5-turbo" # For now...
@@ -48,6 +49,7 @@ class Settings:
 							TopP = TempObj.TopP
 							PresencePenalty = TempObj.PresencePenalty
 							FrequencyPenalty = TempObj.PresencePenalty
+							self.MaxOTokens = TempObj.MaxOTokens
 					except:
 						pass
 			else:
@@ -59,6 +61,7 @@ class Settings:
 		TempObj = Settings (self.UserName)
 		TempObj.MaxContextMsg = self.MaxContextMsg
 		TempObj.MaxTokens = self.MaxTokens
+		TempObj.MaxOTokens = self.MaxOTokens
 		TempObj.AutoContext = self.AutoContext
 		TempObj.SoftwareVersion = self.SoftwareVersion
 		TempObj.API = self.API

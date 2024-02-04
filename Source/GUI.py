@@ -283,6 +283,7 @@ class GUI:
 		self.S.AIModel = self.MainWindow.Model.get ()
 		self.S.MaxContextMsg = int (self.MainWindow.MaxContextMsgEntry.get ())
 		self.S.MaxTokens = int (self.MainWindow.MaxTokensEntry.get ())
+		self.S.MaxOTokens = int (self.MainWindow.MaxOTokensEntry.get ())
 		self.S.Temperature = float (self.MainWindow.TempEntry.get ())
 		self.S.TopP = float (self.MainWindow.TopPEntry.get ())
 		self.S.PresencePenalty = float (self.MainWindow.PresPEntry.get ())
@@ -302,6 +303,7 @@ class GUI:
 		self.S.AIModel = self.MainWindow.Model.get ()
 		self.S.MaxContextMsg = int (self.MainWindow.MaxContextMsgEntry.get ())
 		self.S.MaxTokens = int (self.MainWindow.MaxTokensEntry.get ())
+		self.S.MaxOTokens = int (self.MainWindow.MaxOTokensEntry.get ())
 		self.S.Temperature = float (self.MainWindow.TempEntry.get ())
 		self.S.TopP = float (self.MainWindow.TopPEntry.get ())
 		self.S.PresencePenalty = float (self.MainWindow.PresPEntry.get ())
@@ -403,28 +405,28 @@ class GUI:
 		self.MainWindow.GPT3_5Button = None
 		self.MainWindow.SpacerLabel = None
 		self.MainWindow.GPT4Button = None
-		GPT3_5Tooltip = "Cheaper, faster, fairly capable, available to eveyone, 4K and 16K models (auto selected by allowed tokens)"
-		GPT4Tooltip = "More expensive, slower, very capable, available after first payment, 8K and 32K models (auto selected by allowed tokens)\n(I've added the option since it became public on 6th of July and 32K variant should come out soon, but I still can't test it, since I'm still using my 5$ allowance which expires on aug 1, so I haven't made a payment yet...)"
+		GPT3_5Tooltip = "Cheaper, faster, fairly capable, available to eveyone, with 16K context length but 4k output.\n(Legacy GPT-3.5 Turbo with 16k context length auto selected if allowed tokens > 2048)"
+		GPT4Tooltip = "More expensive, slower, very capable, available after first payment of $1, with 128K context length.\n(Output limited to 4096 tokens, and no larger context model available...)"
 		if self.S.AIModel == "gpt-3.5-turbo":
-			self.MainWindow.GPT3_5Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 1, "W", "GPT-3.5", self.MainWindow.Model, "gpt-3.5-turbo", Default = True, Width = 8, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT3_5Tooltip)
+			self.MainWindow.GPT3_5Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 1, "W", "GPT-3.5 Turbo", self.MainWindow.Model, "gpt-3.5-turbo", Default = True, Width = 13, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT3_5Tooltip)
 			self.MainWindow.SpacerLabel = Window.Label (self.MainWindow.ModelFrame, 0, 2, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
-			self.MainWindow.GPT4Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 3, "W", "GPT-4", self.MainWindow.Model, "gpt-4", Default = False, Width = 6, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4Tooltip)
+			self.MainWindow.GPT4Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 3, "W", "GPT-4 Turbo", self.MainWindow.Model, "gpt-4-turbo", Default = False, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4Tooltip)
 		else:
-			self.MainWindow.GPT3_5Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 1, "W", "GPT-3.5", self.MainWindow.Model, "gpt-3.5-turbo", Default = False, Width = 8, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT3_5Tooltip)
+			self.MainWindow.GPT3_5Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 1, "W", "GPT-3.5 Turbo", self.MainWindow.Model, "gpt-3.5-turbo", Default = False, Width = 13, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT3_5Tooltip)
 			self.MainWindow.SpacerLabel = Window.Label (self.MainWindow.ModelFrame, 0, 2, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
-			self.MainWindow.GPT4Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 3, "W", "GPT-4", self.MainWindow.Model, "gpt-4", Default = True, Width = 6, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4Tooltip)
+			self.MainWindow.GPT4Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 3, "W", "GPT-4 Turbo", self.MainWindow.Model, "gpt-4-turbo", Default = True, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4Tooltip)
 		
-		## Max Tokens
+		## Max Input Tokens
 		self.MainWindow.MaxTokensFrame = None
 		self.MainWindow.MaxTokensFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 2, Column = 0, PadY = 0, Sticky = "W")
 		self.MainWindow.MaxTokensFrame.columnconfigure (1, weight = 1)
 		self.MainWindow.MaxTokensLabel = None
-		self.MainWindow.MaxTokensLabel = Window.Label (self.MainWindow.MaxTokensFrame, 0, 0, "W", "Max Tokens (Rules + Context + Prompt combined):", Theme.BGColor, Anchor = "w", Width = None)
+		self.MainWindow.MaxTokensLabel = Window.Label (self.MainWindow.MaxTokensFrame, 0, 0, "W", "Max Input Tokens (Rules + Context + Prompt):", Theme.BGColor, Anchor = "w", Width = None)
 		self.MainWindow.MaxTokensEntry = None
 		if self.S.AIModel == "gpt-3.5-turbo":
-			self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits input tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages. (HexaPA uses the new models, and switches automatically to the 16K model if you set the max to more then 2048 tokens.)\n(In reality 16384 total tokens Input + Output, but HexaPA only does half split for now...)")
-		else: # GPT-4
-			self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits input tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages. (HexaPA uses the new models, and switches automatically to the 32K model if you set the max to more then 4096 tokens.)\n(In reality 32768 total tokens Input + Output, but HexaPA only does half split for now...)")
+			self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 7, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits input tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages.\n(Auto switch between 4k(0125) and 16k(Legacy) at 0 input tokens or if input + output tokens > 4000 and defaults to 16k above 2048 input tokens.)")
+		else:
+			self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 7, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits intput tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages.\n(Max 128k total tokens but max 4K output is part of that with 0125 model.)")
 		
 		## Max Context Messages
 		self.MainWindow.MaxContextMsgFrame = None
@@ -435,9 +437,21 @@ class GUI:
 		self.MainWindow.MaxContextMsgEntry = None
 		self.MainWindow.MaxContextMsgEntry = Window.Entry (self.MainWindow.MaxContextMsgFrame, 0, 1, "EW", Text = str (self.S.MaxContextMsg), Width = 5, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "The last n messages included as context, influences how far back the AI \"remembers\" the conversation.\n(Even numbers recommended.)")
 		
+		## Max Output Tokens
+		self.MainWindow.MaxOTokensFrame = None
+		self.MainWindow.MaxOTokensFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 4, Column = 0, PadY = 0, Sticky = "W")
+		self.MainWindow.MaxOTokensFrame.columnconfigure (1, weight = 1)
+		self.MainWindow.MaxOTokensLabel = None
+		self.MainWindow.MaxOTokensLabel = Window.Label (self.MainWindow.MaxOTokensFrame, 0, 0, "W", "Max Output Tokens (AI generated):", Theme.BGColor, Anchor = "w", Width = None)
+		self.MainWindow.MaxOTokensEntry = None
+		if self.S.AIModel == "gpt-3.5-turbo":
+			self.MainWindow.MaxOTokensEntry = Window.Entry (self.MainWindow.MaxOTokensFrame, 0, 1, "EW", Text = str (self.S.MaxOTokens), Width = 7, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits output tokens you pay for, but may also cut the AI's response short.\n(Auto switch between 4k(0125) and 16k(Legacy) at 0 input tokens or if input + output tokens > 4000 and defaults to 16k above 2048 input tokens.)")
+		else:
+			self.MainWindow.MaxOTokensEntry = Window.Entry (self.MainWindow.MaxOTokensFrame, 0, 1, "EW", Text = str (self.S.MaxOTokens), Width = 7, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits output tokens you pay for, but may also cut the AI's response short.\n(Max 128k total tokens but max 4K output is part of that with 0125 model.)")
+		
 		## Temperature
 		self.MainWindow.TempFrame = None
-		self.MainWindow.TempFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 4, Column = 0, PadY = 0, Sticky = "W")
+		self.MainWindow.TempFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 5, Column = 0, PadY = 0, Sticky = "W")
 		self.MainWindow.TempFrame.columnconfigure (1, weight = 1)
 		self.MainWindow.TempLabel = None
 		self.MainWindow.TempLabel = Window.Label (self.MainWindow.TempFrame, 0, 0, "W", "Temperature (Float):", Theme.BGColor, Anchor = "w", Width = None)
@@ -446,7 +460,7 @@ class GUI:
 		
 		## TopP
 		self.MainWindow.TopPFrame = None
-		self.MainWindow.TopPFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 5, Column = 0, PadY = 0, Sticky = "W")
+		self.MainWindow.TopPFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 6, Column = 0, PadY = 0, Sticky = "W")
 		self.MainWindow.TopPFrame.columnconfigure (1, weight = 1)
 		self.MainWindow.TopPLabel = None
 		self.MainWindow.TopPLabel = Window.Label (self.MainWindow.TopPFrame, 0, 0, "W", "Top Percentage (Float):", Theme.BGColor, Anchor = "w", Width = None)
@@ -455,7 +469,7 @@ class GUI:
 		
 		## Presence Penalty
 		self.MainWindow.PresPFrame = None
-		self.MainWindow.PresPFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 6, Column = 0, PadY = 0, Sticky = "W")
+		self.MainWindow.PresPFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 7, Column = 0, PadY = 0, Sticky = "W")
 		self.MainWindow.PresPFrame.columnconfigure (1, weight = 1)
 		self.MainWindow.PresPLabel = None
 		self.MainWindow.PresPLabel = Window.Label (self.MainWindow.PresPFrame, 0, 0, "W", "Presence Penalty (Float):", Theme.BGColor, Anchor = "w", Width = None)
@@ -464,7 +478,7 @@ class GUI:
 		
 		## Frequency Penalty
 		self.MainWindow.FreqPFrame = None
-		self.MainWindow.FreqPFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 7, Column = 0, PadY = 0, Sticky = "W")
+		self.MainWindow.FreqPFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 8, Column = 0, PadY = 0, Sticky = "W")
 		self.MainWindow.FreqPFrame.columnconfigure (1, weight = 1)
 		self.MainWindow.FreqPLabel = None
 		self.MainWindow.FreqPLabel = Window.Label (self.MainWindow.FreqPFrame, 0, 0, "W", "Frequency Penalty (Float):", Theme.BGColor, Anchor = "w", Width = None)
@@ -719,8 +733,24 @@ class GUI:
 		
 		# Calculate remaining tokens for context
 		T = Tokenizer (self.S.API, self.S.AIModel, Messages)
-		MaxContextTokens = self.S.MaxTokens - T.TokenCount_Rules - T.TokenCount_Prompt
-		HL.Log ("GUI.py: MaxTokens allowed: " + str (self.S.MaxTokens) + ", Estimated rules tokens: " + str (T.TokenCount_Rules) + ", Estimated prompt tokens: " + str (T.TokenCount_Prompt) + " --> MaxContextTokens " + str (MaxContextTokens) + ", MaxContextMessages: " + str (self.S.MaxContextMsg), 'D', 2)
+		ForceLargeContext = False
+		MaxContextTokens = 4000 # 4k model
+		if self.S.AIModel == "gpt-3.5-turbo":
+			if self.S.MaxTokens == 0: # Context length determined by message count, and length.
+				MaxContextTokens = 16000
+			if self.S.MaxTokens > 2048: # 16k model
+				MaxContextTokens = 16000
+				ForceLargeContext = True
+		elif self.S.AIModel == "gpt-4-turbo": # Very large 128k context but max 4k output
+			MaxContextTokens = 128000
+		HL.Log ("GUI.py: Selected context length (for " + self.S.AIModel + "): " + str (MaxContextTokens), 'D', 2)
+		
+		if self.S.MaxTokens == 0:
+			MaxContextTokens = MaxContextTokens - self.S.MaxOTokens - T.TokenCount_Rules - T.TokenCount_Prompt
+		else:
+			MaxContextTokens = self.S.MaxTokens - T.TokenCount_Rules - T.TokenCount_Prompt
+		
+		HL.Log ("GUI.py: MaxTokens allowed: " + str (self.S.MaxTokens) + ", Estimated rules tokens: " + str (T.TokenCount_Rules) + ", Estimated prompt tokens: " + str (T.TokenCount_Prompt) + ", MaxOTokens allowed: " + str (self.S.MaxOTokens) +  " --> MaxContextTokens " + str (MaxContextTokens) + ", MaxContextMessages: " + str (self.S.MaxContextMsg), 'D', 2)
 		
 		# Generate Context
 		ContextIDs, Context = Commands.GenerateContext (self.K.UserKey, self.S, self.Conversation.Blocks, MaxContextTokens)
@@ -737,6 +767,10 @@ class GUI:
 		T = Tokenizer (self.S.API, self.S.AIModel, Messages)
 		self.ChatWindow.StatsLabel.config (text = "Token estimations:   Total to send: " + str (T.TokenCount_Total) + "\nRules: " + str (T.TokenCount_Rules) + "   Context: " + str (T.TokenCount_Context) + "   Prompt: " + str (T.TokenCount_Prompt))
 		self.Window.update ()
+		if ForceLargeContext == True:
+			EstimatedTokens = MaxContextTokens
+		else:
+			EstimatedTokens = T.TokenCount_Total
 		
 		# Debug
 		if Context != None and Args.debug:
@@ -749,15 +783,15 @@ class GUI:
 		self.ChatWindow.Messages[PromptIndex].MessageData.BlockID = self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID
 		
 		### Send message then display and recod response to new block
-		Response = Communicate.AskTheAI (self.S.API, self.S.AIModel, Rules, Context, Prompt, self.S.MaxTokens, self.S.Temperature, self.S.TopP, self.S.PresencePenalty, self.S.FrequencyPenalty) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
+		Response = Communicate.AskTheAI (self.S.API, self.S.AIModel, Rules, Context, Prompt, self.S.MaxOTokens, self.S.Temperature, self.S.TopP, self.S.PresencePenalty, self.S.FrequencyPenalty, EstimatedTokens) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 128, Temperature = 0.2, TopP = 0.95, PresencePenalty = 0.0, FrequencyPenalty = 0.0, ContextTokens = 4096
 		ErrorText = None
-		if not isinstance (Response, openai.openai_object.OpenAIObject):
-			ErrorText = "Error: API did not respond. The servere is probably overloaded... If this problem persist, check the Log.log file for more information."
+		if (Response.object != "chat.completion"):
+			ErrorText = Response.ErrorMessage
 			self.DisplayMessage ("HexaPA", ErrorText)
 			self.ChatWindow.StatsLabel.config (text = "An error occurred! The propmpt reloaded and first try excluded, you may try re-sending.")
 		else:
-			self.DisplayMessage ("HexaPA", Response['choices'][0]['message']['content'])
-			self.ChatWindow.StatsLabel.config (text = "Actual token usage:   Total: " + str (Response['usage']['total_tokens']) + "\nRules + Context + Prompt: " + str (Response['usage']['prompt_tokens']) + "   Response: " + str (Response['usage']['completion_tokens']))
+			self.DisplayMessage ("HexaPA", Response.choices[0].message.content)
+			self.ChatWindow.StatsLabel.config (text = "Actual token usage:   Total: " + str (Response.usage.total_tokens) + "\nRules + Context + Prompt: " + str (Response.usage.prompt_tokens) + "   Response: " + str (Response.usage.completion_tokens))
 		Index = len (self.ChatWindow.Messages) - 1
 		self.Conversation.NewBlock (self.ChatWindow.Messages[Index].MessageData.Dump (self.K.UserKey))
 		if ErrorText != None:
@@ -794,8 +828,8 @@ class GUI:
 			Prompt = {"role": "user", "content": "What is the subject of the following message?\n\nMessage:\n" + FirstMsg.Message}
 			HL.Log ("GUI.py: Unspecified Subject! --> Asking the AI to summarize it in a sentence.", 'I', 2)
 			Response = Communicate.AskTheAI (self.S.API, self.S.AIModel, SubjectDetectionRules, Context, Prompt) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
-			if isinstance (Response, openai.openai_object.OpenAIObject): # AI Respose
-				self.Conversation.Subject = Response['choices'][0]['message']['content']
+			if (Response.object == "chat.completion"): # AI Respose
+				self.Conversation.Subject = Response.choices[0].message.content
 				HL.Log ("GUI.py: AI said the subject is: " + self.Conversation.Subject, "I", 2)
 				self.ChatWindow.SubjectLabel.config (text = self.Conversation.Subject + " (Created at " + self.Conversation.CreationTime + ")")
 		elif PromptIndex == BlockID:
