@@ -6,6 +6,7 @@ import json
 from HexaLibPython import HexaLog as HL
 from Source.Options import *
 from Source.Keys import *
+import Source.LogTrace as LogT
 
 
 class APIError:
@@ -44,7 +45,7 @@ class Communicate:
 					max_tokens = 1, # no need to waste much tokens, although may not work properly... Not sure about the exact range, it usually consumes 19-23 tokens even when set to 1.
 					frequency_penalty = -2.0 # Focus on the task (hopefully...)
 				)
-				HL.Log ("Communicate.py: Key accepted! The AI's test answer(Model: gpt-3.5-turbo-0125): " + cls.Response_OpenAI.choices[0].message.content, 'D', 4)
+				HL.Log ("Communicate.py: Key accepted! The AI's test answer(Model: gpt-3.5-turbo-0125): " + cls.Response_OpenAI.choices[0].message.content, 'D', LogT.Communicate)
 				
 # This works, but the latest gpt-3.5-turbo-0125 chat model is cheaper then the completion model.
 #				openai.api_key = Key
@@ -59,14 +60,14 @@ class Communicate:
 #					presence_penalty = 0
 #				)
 #				Text = cls.Response_OpenAI.choices[0].text
-#				HL.Log ("Communicate.py: Key accepted! The AI's test answer(Model: gpt-3.5-turbo-instruct): " + Text, 'D', 4)
+#				HL.Log ("Communicate.py: Key accepted! The AI's test answer(Model: gpt-3.5-turbo-instruct): " + Text, 'D', LogT.Communicate)
 			except Exception as e:
-				HL.Log (f"Communicate.py: An error occurred: {e}", 'E', 4)
+				HL.Log (f"Communicate.py: An error occurred: {e}", 'E', LogT.Communicate)
 				if AIModel == "gpt-3.5-turbo":
-					HL.Log ("Falling back to gpt-3.5-turbo-instruct", 'I', 4)
+					HL.Log ("Falling back to gpt-3.5-turbo-instruct", 'I', LogT.Communicate)
 				else:
-					HL.Log ("Falling back to " + AIModel + "-preview", 'I', 4)
-				HL.Log ("", 'I', 4) # HexaLog keeps the last line if the Log file is not finished to compress multiple of the same messages, so a different line flushes the error to file...
+					HL.Log ("Falling back to " + AIModel + "-preview", 'I', LogT.Communicate)
+				HL.Log ("", 'I', LogT.Communicate) # HexaLog keeps the last line if the Log file is not finished to compress multiple of the same messages, so a different line flushes the error to file...
 				HL.LogToFile ("Log.log", False)
 				try: # Fallback option. More expensive, but still a fraction of a cent... Just in case they remove gpt-3.5-turbo-instruct model. (which is cheap and fast but not very useful...)
 					openai.api_key = Key
@@ -83,7 +84,7 @@ class Communicate:
 							presence_penalty = 0
 						)
 						Text = cls.Response_OpenAI.choices[0].text
-						HL.Log ("Communicate.py: Key accepted! The AI's test answer(Model: gpt-3.5-turbo-instruct): " + Text, 'D', 4)
+						HL.Log ("Communicate.py: Key accepted! The AI's test answer(Model: gpt-3.5-turbo-instruct): " + Text, 'D', LogT.Communicate)
 					else:
 						Messages = [
 							{
@@ -105,10 +106,10 @@ class Communicate:
 							max_tokens = 1, # no need to waste much tokens, although may not work properly... Not sure about the exact range, it usually consumes 19-23 tokens even when set to 1.
 							frequency_penalty = -2.0 # Focus on the task (hopefully...)
 						)
-						HL.Log ("Communicate.py: Key accepted! The AI's test answer(" + AIModel + "-preview): " + cls.Response_OpenAI.choices[0].message.content, 'D', 4)
+						HL.Log ("Communicate.py: Key accepted! The AI's test answer(" + AIModel + "-preview): " + cls.Response_OpenAI.choices[0].message.content, 'D', LogT.Communicate)
 				except Exception as e:
-					HL.Log (f"Communicate.py: An error occurred: {e}", 'E', 4)
-					HL.Log ("", 'E', 4) # HexaLog keeps the last line if the Log file is not finished to compress multiple of the same messages, so a different line flushes the error to file...
+					HL.Log (f"Communicate.py: An error occurred: {e}", 'E', LogT.Communicate)
+					HL.Log ("", 'E', LogT.Communicate) # HexaLog keeps the last line if the Log file is not finished to compress multiple of the same messages, so a different line flushes the error to file...
 					HL.LogToFile ("Log.log", False)
 					return
 			cls.Disabled_OpenAI = False
@@ -150,9 +151,9 @@ class Communicate:
 					if MaxTokens > 4096 or MaxTokens == 0:
 						MaxTokens = 4096
 				else:
-					HL.Log ("Communicate.py: Unknown AI model: " + AIModel, 'E', 4)
+					HL.Log ("Communicate.py: Unknown AI model: " + AIModel, 'E', LogT.Communicate)
 					
-				HL.Log ("Communicate.py: Using AI Model: " + Model, 'D', 4)
+				HL.Log ("Communicate.py: Using AI Model: " + Model, 'D', LogT.Communicate)
 				cls.Response_OpenAI = openai.chat.completions.create (
 					model = Model,
 					messages = Messages,
@@ -164,15 +165,15 @@ class Communicate:
 					frequency_penalty = FrequencyPenalty # float, Range -2 to 2; -2 = ASD (Hyperfocus) vs 2 = ADHD (Creativity)
 					#user = "Unspecified" # optional, (I guess it's for companies with multiple users using the same account. May cost some extra tokens multiple times / message...)
 				)
-				HL.Log ("Communicate.py: The AI responded!", 'D', 4)
+				HL.Log ("Communicate.py: The AI responded!", 'D', LogT.Communicate)
 				if Args.debug or Args.verbose: # This is a more detailed response, that doesn't fit into a single line log message...
 					print ("Communicate.py: The AI returned:")
 					print (cls.Response_OpenAI.model_dump_json (indent=2))
 					print ("")
 				return cls.Response_OpenAI
 			except Exception as e:
-				HL.Log (f"Communicate.py: An error occurred: {e}", 'E', 4)
-				HL.Log ("", 'E', 4) # HexaLog keeps the last line if the Log file is not finished to compress multiple of the same messages, so this makes the error visible in the file...
+				HL.Log (f"Communicate.py: An error occurred: {e}", 'E', LogT.Communicate)
+				HL.Log ("", 'E', LogT.Communicate) # HexaLog keeps the last line if the Log file is not finished to compress multiple of the same messages, so this makes the error visible in the file...
 				HL.LogToFile ("Log.log", False)
 				print (dir (e))
 				Error = APIError ()

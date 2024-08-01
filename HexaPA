@@ -19,7 +19,7 @@ elif Source.Options.Args.verbose:
 	HL.HexaLog.LogSettings ('I', 0xFFFF)
 else:
 	HL.HexaLog.LogSettings ('E', 0xFFFF)
-HL.HexaLog.Log ("Main: HexaLog initialized!", 'I', 1)
+HL.HexaLog.Log ("Main: HexaLog initialized!", 'I', Source.LogTrace.Main)
 
 S = Source.Settings () # Load settings
 PasswordAccepted = False
@@ -30,47 +30,49 @@ if CLI.K != None:
 	K = CLI.K
 	PasswordAccepted = CLI.PasswordAccepted
 
-HL.HexaLog.Log ("Main: Opening GUI Window!", 'I', 1)
+HL.HexaLog.Log ("Main: Opening GUI Window!", 'I', Source.LogTrace.Main)
 UI = Source.GUI (S) # First window created here...
 while PasswordAccepted == False:
 	UI.PasswordRequest ()
 	UI.OpenWindow () # Open first window (This will be destroyed when the user inputs the password. This is the only way I could solve exitting the mainloop() to do something outside GUI calss.)
 	try:
-		HL.HexaLog.Log ("Main: Loading API Key(s)...", 'D', 1)
+		HL.HexaLog.Log ("Main: Loading API Key(s)...", 'D', Source.LogTrace.Main)
 		K = Source.Keys (S.UserName, UI.PWD)
 		if K.UserKey != K.IllegalKey:
 			PasswordAccepted = True
 		break
 	except:
-		HL.HexaLog.Log ("Main: Wrong password! Try again. :P", 'E', 1)
+		HL.HexaLog.Log ("Main: Wrong password! Try again. :P", 'E', Source.LogTrace.Main)
 		UI = Source.GUI (S) # First window re-created here otherwise can't try again...
 
 Conversation = None
 if PasswordAccepted == True:
+	WDir = Source.TempDir ()
 	UI.SetKeys (K) # New window created here...
 	if K.Key_OpenAI:
-		HL.HexaLog.Log ("Main: Testing OpenAI API key...", 'D', 1)
+		HL.HexaLog.Log ("Main: Testing OpenAI API key...", 'D', Source.LogTrace.Main)
 		Source.Communicate (S.API, S.AIModel, K.Key_OpenAI)
 		if Source.Communicate.Disabled_OpenAI != True:
 			UI.Main ()
 		else:
-			HL.HexaLog.Log ("Main: Key invalid, or the service is down. --> Requesting API key.", 'I', 1)
+			HL.HexaLog.Log ("Main: Key invalid, or the service is down. --> Requesting API key.", 'I', Source.LogTrace.Main)
 			UI.RequestKey ("Either the saved key is invalid or the OpenAI service is down!\nPlease check the log file for more information!")
 	else:
-		HL.HexaLog.Log ("Main: API Key not found. --> Requesting API key.", 'I', 1)
+		HL.HexaLog.Log ("Main: API Key not found. --> Requesting API key.", 'I', Source.LogTrace.Main)
 		UI.RequestKey ()
 	Conversation = UI.InitChain ()
 	UI.OpenWindow () # Opening new window here.
 
 	if Conversation != None:
 		if Conversation.File != None:
-			HL.HexaLog.Log ("Main: Saving conversation!", 'I', 1)
+			HL.HexaLog.Log ("Main: Saving conversation!", 'I', Source.LogTrace.Main)
 			Conversation.Save ()
 	S.SaveSettings ()
-	HL.HexaLog.Log ("Main: Saving logs, then exitting.", 'I', 1)
-	HL.HexaLog.Log ("", 'I', 1) # Logs are appended, this makes it easier to see in the log file where the program is closed.
-	HL.HexaLog.LogToFile ("Log.log", True)
+	HL.HexaLog.Log ("Main: Saving logs, then exitting.", 'I', Source.LogTrace.Main)
+	HL.HexaLog.Log ("", 'I', Source.LogTrace.Main) # Logs are appended, this makes it easier to see in the log file where the program is closed.
+	WDir.Discard ()
 else:
-	HL.HexaLog.Log ("Main: No password, no chat! :P Good bye!", 'E', 1)
-	HL.HexaLog.Log ("", 'I', 1) # Logs are appended, this makes it easier to see in the log file where the program is closed.
-	HL.HexaLog.LogToFile ("Log.log", True)
+	HL.HexaLog.Log ("Main: No password, no chat! :P Good bye!", 'E', Source.LogTrace.Main)
+	HL.HexaLog.Log ("", 'I', Source.LogTrace.Main) # Logs are appended, this makes it easier to see in the log file where the program is closed.
+
+HL.HexaLog.LogToFile ("Log.log", True)

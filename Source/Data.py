@@ -6,6 +6,7 @@ import base64
 from cryptography.fernet import Fernet
 
 from HexaLibPython import HexaLog as HL
+import Source.LogTrace as LogT
 from Source.Settings import *
 
 
@@ -64,7 +65,7 @@ class Data:
 		
 		# Default (if the data is no longer supported, or created with a newer version it should be initialized with default values.)
 		else:
-			HL.Log ("Data.py: Block content can not be parsed! Either no longer supported, or created with a newer version. DO NOT USE --renew-data option! (That may overwrite any data in this block!)", 'E', 7)
+			HL.Log ("Data.py: Block content can not be parsed! Either no longer supported, or created with a newer version. DO NOT USE --renew-data option! (That may overwrite any data in this block!)", 'E', LogT.Data)
 			self.DataVersion = Settings.DataVersion
 			self.DataType = "Message"
 			self.Title = ""
@@ -104,7 +105,7 @@ class Data:
 		
 		# Default (if the data is no longer supported, or created with a newer version it should be initialized with default values.)
 		else:
-			HL.Log ("Data.py: Block content can not be parsed! Either no longer supported, or created with a newer version. DO NOT USE --renew-data option! (That may overwrite any data in this block!)", 'E', 7)
+			HL.Log ("Data.py: Block content can not be parsed! Either no longer supported, or created with a newer version. DO NOT USE --renew-data option! (That may overwrite any data in this block!)", 'E', LogT.Data)
 			self.DataVersion = Settings.DataVersion
 			self.DataType = "Message"
 			self.Title = ""

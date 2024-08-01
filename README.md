@@ -43,9 +43,7 @@ By the way you can also see images of the project on SubscribeStar and Patreon.
 ```
 sudo apt-get update && sudo apt-get -y upgrade
 sudo apt-get install -y git pip python3-tk python3-imaging
-pip install openai
-pip install tiktoken
-pip install cairosvg
+pip install openai tiktoken cairosvg pydub simpleaudio
 ```
 
 Get an Open AI API key. (Relatively cheap for text models but not free, follow the instructions in HexaPA on how to get an API key.)
@@ -101,6 +99,8 @@ Installed separately:
 - from pillow -> Image, ImageTk (for images and use of images in tkinter GUI)
 - openai (for accessing OpenAI API)
 - tiktoken (for OpenAI token counting)
+- pydub
+- simpleaudio
 
 
 
@@ -113,8 +113,7 @@ git pull origin main
 - else you will need to download and unzip the new version...
 - v0.2 requires also updating the OpenAI library, since it uses the latest model, and it's new 16k variant as well:
 ```
-pip install --upgrade openai
-pip install --upgrade tiktoken
+pip install --upgrade openai tiktoken pydub simpleaudio
 ```
 
 
@@ -131,3 +130,6 @@ pip install --upgrade tiktoken
 - Bug fixe(s) - Fixed some chat and rules preset export bugs, destroyed window bug at wrong password entry and a block chain bug.
 - Import chat option - Added --user, --password and --import-chat options, so exported chat can now be imported from json... (The --user and --password options work, but there is no practical use for them yet. It's for scripting, but CLI function is incomplete at the moment...)
 - Max context = model context length - max allowed tokens. GPT-3.5 Turbo uses latest 4k model, and legacy 16k(currently only available with larger context) when allowed tokens > 2048
+
+### Version v0.4
+- Debugging improvements... (I really should have done this a long time ago...)

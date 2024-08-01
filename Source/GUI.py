@@ -9,6 +9,7 @@ import datetime
 import platform
 
 from HexaLibPython import HexaLog as HL
+import Source.LogTrace as LogT
 from Source.Window import *
 from Source.Keys import *
 from Source.Theme import *
@@ -34,7 +35,7 @@ class GUI:
 		self.WinHeight = self.Window.winfo_screenheight ()
 		self.WinPosX = self.Window.winfo_screenwidth () - self.WinWidth
 		self.WinPosY = 0
-		HL.Log ("GUI.py: WindowSize: " + str (self.WinWidth) + " x " + str (self.WinHeight) + "; PosX: " + str (self.WinPosX) + "; PosY: " + str (self.WinPosY), 'D', 2)
+		HL.Log ("GUI.py: WindowSize: " + str (self.WinWidth) + " x " + str (self.WinHeight) + "; PosX: " + str (self.WinPosX) + "; PosY: " + str (self.WinPosY), 'D', LogT.GUI)
 		self.Window.geometry (f"{self.WinWidth}x{self.WinHeight}+{self.WinPosX}+{self.WinPosY}")
 		self.Window.resizable (True, True)
 		self.Window.configure (bg = Theme.BGColor)
@@ -79,7 +80,7 @@ class GUI:
 	
 	
 	def InitChain (self):
-		self.Conversation = BlockChain (6)
+		self.Conversation = BlockChain (LogT.BlockChain)
 		return self.Conversation
 	
 	
@@ -290,9 +291,9 @@ class GUI:
 		self.S.FrequencyPenalty = float (self.MainWindow.FreqPEntry.get ())
 		self.Conversation.Subject = self.MainWindow.Subject.get ()
 		if self.Conversation.Subject != "Enter the subject here... (optional)" and self.Conversation.Subject != "":
-			HL.Log ("GUI.py: Creating new conversation with subject: " + self.Conversation.Subject, 'I', 2)
+			HL.Log ("GUI.py: Creating new conversation with subject: " + self.Conversation.Subject, 'I', LogT.GUI)
 		else:
-			HL.Log ("GUI.py: Creating new conversation with unknown subject.", 'I', 2)
+			HL.Log ("GUI.py: Creating new conversation with unknown subject.", 'I', LogT.GUI)
 		self.MainWindow.Base.grid_forget ()
 		self.Chat ()
 	
@@ -308,7 +309,7 @@ class GUI:
 		self.S.TopP = float (self.MainWindow.TopPEntry.get ())
 		self.S.PresencePenalty = float (self.MainWindow.PresPEntry.get ())
 		self.S.FrequencyPenalty = float (self.MainWindow.FreqPEntry.get ())
-		HL.Log ("GUI.py: Loading: " + str (self.MainWindow.ConversationList[ArgList[0]].File), 'I', 2)
+		HL.Log ("GUI.py: Loading: " + str (self.MainWindow.ConversationList[ArgList[0]].File), 'I', LogT.GUI)
 		self.Conversation.Load (self.MainWindow.ConversationList[ArgList[0]].File)
 		self.MainWindow.Base.grid_forget ()
 		self.Chat ()
@@ -320,9 +321,9 @@ class GUI:
 	def DeleteChat (self, ArgList):
 		try:
 			os.remove(self.MainWindow.ConversationList[ArgList[0]].File)
-			HL.Log ("GUI.py: Deleted: " + str (self.MainWindow.ConversationList[ArgList[0]].File), 'I', 2)
+			HL.Log ("GUI.py: Deleted: " + str (self.MainWindow.ConversationList[ArgList[0]].File), 'I', LogT.GUI)
 		except OSError as e:
-			HL.Log ("GUI.py: Error deleting " + str (self.MainWindow.ConversationList[ArgList[0]].File) + f": {e}", 'E', 2)
+			HL.Log ("GUI.py: Error deleting " + str (self.MainWindow.ConversationList[ArgList[0]].File) + f": {e}", 'E', LogT.GUI)
 		self.MainWindow.Base.grid_forget ()
 		self.Main ()
 	
@@ -362,7 +363,7 @@ class GUI:
 		self.MainWindow.ConversationList = []
 		ConversationDir = "Conversations"
 		for BinFile in glob.glob (os.path.join (ConversationDir, "*.bin")):
-			X = BlockChain (6)
+			X = BlockChain (LogT.BlockChain)
 			X.Load (BinFile)
 			Index = len (self.MainWindow.ConversationList) # A new object is being added to the list so the index should be it's former length...
 			if Index % 2 == 0:
@@ -513,7 +514,7 @@ class GUI:
 			self.Window.unbind ('<Command-R>', self.CtrlShiftRBinding)
 			self.Window.unbind ('<Command-a>', self.CtrlABinding)
 		if self.Conversation.File:
-			HL.Log ("GUI.py: Saving conversation!", 'I', 2)
+			HL.Log ("GUI.py: Saving conversation!", 'I', LogT.GUI)
 			# Update ratings so the conversation is loaded as left on exit. (This will only work if you return to Main before exiting.)
 			for Index in range (0, len (self.ChatWindow.Messages)):
 				if self.ChatWindow.Messages[Index].Exclude.get () == True:
@@ -582,7 +583,7 @@ class GUI:
 		# Calculate remaining tokens for context
 		T = Tokenizer (self.S.API, self.S.AIModel, Messages)
 		MaxContextTokens = self.S.MaxTokens - T.TokenCount_Rules - T.TokenCount_Prompt
-		HL.Log ("GUI.py: MaxTokens allowed: " + str (self.S.MaxTokens) + ", Estimated rules tokens: " + str (T.TokenCount_Rules) + ", Estimated prompt tokens: " + str (T.TokenCount_Prompt) + " --> MaxContextTokens " + str (MaxContextTokens) + ", MaxContextMessages: " + str (self.S.MaxContextMsg), 'D', 2)
+		HL.Log ("GUI.py: MaxTokens allowed: " + str (self.S.MaxTokens) + ", Estimated rules tokens: " + str (T.TokenCount_Rules) + ", Estimated prompt tokens: " + str (T.TokenCount_Prompt) + " --> MaxContextTokens " + str (MaxContextTokens) + ", MaxContextMessages: " + str (self.S.MaxContextMsg), 'D', LogT.GUI)
 		
 		# Generate Context
 		ContextIDs, Context = Commands.GenerateContext (self.K.UserKey, self.S, self.Conversation.Blocks, MaxContextTokens)
@@ -743,14 +744,14 @@ class GUI:
 				ForceLargeContext = True
 		elif self.S.AIModel == "gpt-4-turbo": # Very large 128k context but max 4k output
 			MaxContextTokens = 128000
-		HL.Log ("GUI.py: Selected context length (for " + self.S.AIModel + "): " + str (MaxContextTokens), 'D', 2)
+		HL.Log ("GUI.py: Selected context length (for " + self.S.AIModel + "): " + str (MaxContextTokens), 'D', LogT.GUI)
 		
 		if self.S.MaxTokens == 0:
 			MaxContextTokens = MaxContextTokens - self.S.MaxOTokens - T.TokenCount_Rules - T.TokenCount_Prompt
 		else:
 			MaxContextTokens = self.S.MaxTokens - T.TokenCount_Rules - T.TokenCount_Prompt
 		
-		HL.Log ("GUI.py: MaxTokens allowed: " + str (self.S.MaxTokens) + ", Estimated rules tokens: " + str (T.TokenCount_Rules) + ", Estimated prompt tokens: " + str (T.TokenCount_Prompt) + ", MaxOTokens allowed: " + str (self.S.MaxOTokens) +  " --> MaxContextTokens " + str (MaxContextTokens) + ", MaxContextMessages: " + str (self.S.MaxContextMsg), 'D', 2)
+		HL.Log ("GUI.py: MaxTokens allowed: " + str (self.S.MaxTokens) + ", Estimated rules tokens: " + str (T.TokenCount_Rules) + ", Estimated prompt tokens: " + str (T.TokenCount_Prompt) + ", MaxOTokens allowed: " + str (self.S.MaxOTokens) +  " --> MaxContextTokens " + str (MaxContextTokens) + ", MaxContextMessages: " + str (self.S.MaxContextMsg), 'D', LogT.GUI)
 		
 		# Generate Context
 		ContextIDs, Context = Commands.GenerateContext (self.K.UserKey, self.S, self.Conversation.Blocks, MaxContextTokens)
@@ -776,7 +777,7 @@ class GUI:
 		if Context != None and Args.debug:
 			for Item in Context:
 				print (Item)
-		HL.Log ("GUI.py: Estimated context tokens: " + str (T.TokenCount_Context) + " --> Estimated total tokens: " + str (T.TokenCount_Total), 'D', 2)
+		HL.Log ("GUI.py: Estimated context tokens: " + str (T.TokenCount_Context) + " --> Estimated total tokens: " + str (T.TokenCount_Total), 'D', LogT.GUI)
 		
 		### Record promt into a new block.
 		self.Conversation.NewBlock (self.ChatWindow.Messages[PromptIndex].MessageData.Dump (self.K.UserKey))
@@ -826,11 +827,11 @@ class GUI:
 			SubjectDetectionRules = {"role": "system", "content": "Your task is to determine what is the subject of messages in a very short sentences. Never return more then one sentence."}
 			Context = [{"role": "user", "content": "What is the subject of the following message?\n\nMessage:\nGive me a sentence for testing my application."}, {"role": "assistant", "content": "Sentence request for testing."}] # This works with Content = None, but more reliable with an example. Otherwise it may start with "Subject: ", or "The subject of this..." which is not desirable.
 			Prompt = {"role": "user", "content": "What is the subject of the following message?\n\nMessage:\n" + FirstMsg.Message}
-			HL.Log ("GUI.py: Unspecified Subject! --> Asking the AI to summarize it in a sentence.", 'I', 2)
+			HL.Log ("GUI.py: Unspecified Subject! --> Asking the AI to summarize it in a sentence.", 'I', LogT.GUI)
 			Response = Communicate.AskTheAI (self.S.API, self.S.AIModel, SubjectDetectionRules, Context, Prompt) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
 			if (Response.object == "chat.completion"): # AI Respose
 				self.Conversation.Subject = Response.choices[0].message.content
-				HL.Log ("GUI.py: AI said the subject is: " + self.Conversation.Subject, "I", 2)
+				HL.Log ("GUI.py: AI said the subject is: " + self.Conversation.Subject, "I", LogT.GUI)
 				self.ChatWindow.SubjectLabel.config (text = self.Conversation.Subject + " (Created at " + self.Conversation.CreationTime + ")")
 		elif PromptIndex == BlockID:
 			self.ChatWindow.SubjectLabel.config (text = self.Conversation.Subject + " (Created at " + self.Conversation.CreationTime + ")")
@@ -838,7 +839,7 @@ class GUI:
 		### Generate filename if does not exist...
 		if self.Conversation.File == None:
 			self.Conversation.File = "Conversations/" + re.sub ('[\W_]+', '_', self.Conversation.CreationTime) + ".bin"
-			HL.Log ("GUI.py: Chat will be saved to: " + self.Conversation.File, 'D', 2)
+			HL.Log ("GUI.py: Chat will be saved to: " + self.Conversation.File, 'D', LogT.GUI)
 	
 	
 	
@@ -941,22 +942,22 @@ class GUI:
 				self.DisplayMessage ("Developer", Text)
 			else: # Conversation
 				if Args.renew_data: # Renew data...
-					TempConversation = BlockChain (6)
+					TempConversation = BlockChain (LogT.BlockChain)
 					TempConversation.Subject = self.Conversation.Subject
 					TempConversation.File = self.Conversation.File
 				
 				if self.Conversation.Validate () == True:
-					HL.Log ("GUI.py: Chain validation complete!", 'D', 2)
+					HL.Log ("GUI.py: Chain validation complete!", 'D', LogT.GUI)
 				else:
-					HL.Log ("GUI.py: Chain validation failed! >> Attempting to display read-only data! (This may fail...)", 'E', 2)
-					HL.Log ("", 'E', 2)
+					HL.Log ("GUI.py: Chain validation failed! >> Attempting to display read-only data! (This may fail...)", 'E', LogT.GUI)
+					HL.Log ("", 'E', LogT.GUI)
 				for Block in self.Conversation.Blocks:
 					MessageData = Data ()
 					MessageData.Parse (self.K.UserKey, Block.Data, Block.BlockID, Block.Rating)
 					if not Args.renew_data and MessageData.DataVersion < Settings.DataVersion: # Warn... This should not change saved data, even if it's no longer supported...
-						HL.Log ("GUI.py: Block contains old data. Some functionality may be unavailable during this conversation. (You can specify --renew-data option to renew the chain when continuing conversation.)", 'W', 2)
+						HL.Log ("GUI.py: Block contains old data. Some functionality may be unavailable during this conversation. (You can specify --renew-data option to renew the chain when continuing conversation.)", 'W', LogT.GUI)
 					elif Args.renew_data: # Renew data... (Don't check for old data, if this option is specified, the data must be added whether it's new or old, as the chain may contain different version data in each block...)
-						HL.Log ("GUI.py: Saving block with new version data. (--renew-data specified)", 'I', 2)
+						HL.Log ("GUI.py: Saving block with new version data. (--renew-data specified)", 'I', LogT.GUI)
 						MessageData.DataVersion = Settings.DataVersion
 						TempConversation.NewBlock (MessageData.Dump (self.K.UserKey))
 					if MessageData.DataType == "Message":
@@ -964,7 +965,7 @@ class GUI:
 						self.DisplayMessage (MsgData = MessageData)
 					elif MessageData.DataType == "Rules":
 						self.Conversation.LatestRules = Block.BlockID
-						HL.Log ("GUI.py: Latest rule: " + str (Block.BlockID), 'D', 2)
+						HL.Log ("GUI.py: Latest rule: " + str (Block.BlockID), 'D', LogT.GUI)
 				if Args.renew_data: # Renew data...
 					TempConversation.Save ()
 					self.Conversation.Clear ()
@@ -988,7 +989,7 @@ class GUI:
 				self.ChatWindow.SendButton.configure (state = tk.NORMAL)
 		
 		except Exception:
-			HL.Log ("GUI.py: Could not parse block content! It can be corrupted or encrypted with other username and password combination... (This can happen when .Keys.bin and .Settings.bin has been deleted, and new credentials entered. If that's the case and block validation was successful, the conversation can still be decrypted with the initial username and password combination.)", 'E', 2)
+			HL.Log ("GUI.py: Could not parse block content! It can be corrupted or encrypted with other username and password combination... (This can happen when .Keys.bin and .Settings.bin has been deleted, and new credentials entered. If that's the case and block validation was successful, the conversation can still be decrypted with the initial username and password combination.)", 'E', LogT.GUI)
 		
 		# Key binding...
 		self.SpaceBinding = self.Window.bind ('<space>', lambda event: self.ChatWindow.UserInputTextBox.focus ())
@@ -1015,14 +1016,14 @@ class GUI:
 		if self.Conversation.LatestRules == None and NewRules.Rules != "" and NewRules.Rules != self.RulesWindow.Reminder: # New conversation with no rules defined yet. (exclude reminder text)
 			self.Conversation.NewBlock (NewRules.Dump (self.K.UserKey))
 			self.Conversation.LatestRules = self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID # Last block's ID where the rules have just been saved.
-			HL.Log ("GUI.py: First rules saved to block: " + str (self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID), 'D', 2)
+			HL.Log ("GUI.py: First rules saved to block: " + str (self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID), 'D', LogT.GUI)
 			self.Conversation.Rules = Data () # If there ware no rules defined yet this shoud still be None
 			self.Conversation.Rules.Parse (self.K.UserKey, self.Conversation.Blocks[self.Conversation.LatestRules].Data, self.Conversation.LatestRules)
 		elif self.Conversation.LatestRules != None:
 			if NewRules.Rules != self.Conversation.Rules.Rules and NewRules.Rules != self.RulesWindow.Reminder or NewRules.Rules != "" and NewRules.Message != self.Conversation.Rules.Message and NewRules.Message != self.RulesWindow.InjectionReminder: # If the rules have changed. (exclude reminder text)
 				self.Conversation.NewBlock (NewRules.Dump (self.K.UserKey))
 				self.Conversation.LatestRules = self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID # Last block's ID where the rules have just been saved.
-				HL.Log ("GUI.py: New rules saved to block: " + str (self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID), 'D', 2)
+				HL.Log ("GUI.py: New rules saved to block: " + str (self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID), 'D', LogT.GUI)
 				self.Conversation.Rules.Parse (self.K.UserKey, self.Conversation.Blocks[self.Conversation.LatestRules].Data, self.Conversation.LatestRules)
 	
 	
@@ -1146,7 +1147,7 @@ class GUI:
 		self.RulesWindow.RuleData = Data (DataType = "Rules")
 		if self.Conversation.LatestRules == None: # If no rules have been defined yet.
 			# Rules
-			HL.Log ("GUI.py: No Latest Rules ID: ", 'D', 2)
+			HL.Log ("GUI.py: No Latest Rules ID: ", 'D', LogT.GUI)
 			self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 1, 0, PadY = 0, Sticky = "NSEW", Text = self.RulesWindow.Reminder, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = self.RulesWindow.RulesTooltipText)
 			self.RulesWindow.RulesInputTextBox.config (fg = Theme.SmallText)
 			self.RulesWindow.RulesInputTextBox.bind ("<FocusIn>", self.ClearReminder) # click event that clears the field.
@@ -1157,7 +1158,7 @@ class GUI:
 			self.RulesWindow.RulesMessageInjectionTextBox.bind ("<FocusIn>", self.ClearReminder) # click event that clears the field.
 		else:
 			self.RulesWindow.RuleData.Parse (self.K.UserKey, self.Conversation.Blocks[self.Conversation.LatestRules].Data, self.Conversation.LatestRules)
-			HL.Log ("GUI.py: Latest Rules ID: " + str (self.Conversation.LatestRules), 'D', 2)
+			HL.Log ("GUI.py: Latest Rules ID: " + str (self.Conversation.LatestRules), 'D', LogT.GUI)
 			# Rules
 			if self.RulesWindow.RuleData.DataType == "Rules" and self.RulesWindow.RuleData.Rules == "": # If the rules have been deleted.
 				self.RulesWindow.RulesInputTextBoxFrame, self.RulesWindow.RulesInputScrollX, self.RulesWindow.RulesInputScrollY, self.RulesWindow.RulesInputTextBox = Window.TextBox (self.RulesWindow.RulesInputFrame, 1, 0, PadY = 0, Sticky = "NSEW", Text = self.RulesWindow.Reminder, TooltipLabel = self.RulesWindow.TooltipLabel, TooltipText = self.RulesWindow.RulesTooltipText)

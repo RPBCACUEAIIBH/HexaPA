@@ -7,6 +7,7 @@ import hashlib
 from cryptography.fernet import Fernet
 
 from HexaLibPython import HexaLog as HL
+import Source.LogTrace as LogT
 from Source.Settings import *
 
 
@@ -32,9 +33,9 @@ class Keys:
 					F = Fernet (self.UserKey)
 					self.Key_OpenAI = F.decrypt (TempKeys.Key_OpenAI).decode ()
 				if self.Key_OpenAI == None:
-					HL.Log ("Keys.py: OpenAI key not found!", 'E', 3)
+					HL.Log ("Keys.py: OpenAI key not found!", 'E', LogT.Keys)
 			else:
-				HL.Log ("Keys.py: " + self.KeyFile + " not found!", 'W', 3)
+				HL.Log ("Keys.py: " + self.KeyFile + " not found!", 'W', LogT.Keys)
 	
 	
 	
@@ -45,4 +46,4 @@ class Keys:
 		TempKeys.Key_OpenAI = F.encrypt (self.Key_OpenAI.encode()) # Good idea to encrypt the API key(s) as well, because they could be extracted and used by others while you pay for it.
 		with open (self.KeyFile, "wb") as File:
 			pickle.dump (TempKeys, File)
-		HL.Log ("Keys.py: Keys saved!", 'I', 3)
+		HL.Log ("Keys.py: Keys saved!", 'I', LogT.Keys)

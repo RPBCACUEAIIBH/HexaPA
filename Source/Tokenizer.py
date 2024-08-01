@@ -3,6 +3,7 @@
 import tiktoken
 
 from HexaLibPython import HexaLog as HL
+import Source.LogTrace as LogT
 
 
 class Tokenizer:
@@ -24,7 +25,7 @@ class Tokenizer:
 				elif i["role"] == "system":
 					self.TokenCount_Rules = len (Encoding.encode ("role: system, content:" + i["content"]))
 				else:
-					HL.Log ("Tokenizer.py: Unknown role: " + i["role"] + " >> Omitting message...", 'E', 5)
+					HL.Log ("Tokenizer.py: Unknown role: " + i["role"] + " >> Omitting message...", 'E', LogT.Tokenizer)
 			self.TokenCount_Total = self.TokenCount_Rules + self.TokenCount_Context + self.TokenCount_Prompt
 	
 	

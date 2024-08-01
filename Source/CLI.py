@@ -1,6 +1,7 @@
 #! /bin/python3
 
 from HexaLibPython.HexaLog import HexaLog as HL
+import Source.LogTrace as LogT
 from Source.Keys import *
 from Source.Commands import *
 from Source.Settings import *
@@ -30,12 +31,12 @@ class CLI:
 			self.S.SaveSettings ()
 		
 		try:
-			HL.Log ("CLI.py: Loading API Key(s)...", 'D', 10)
+			HL.Log ("CLI.py: Loading API Key(s)...", 'D', LogT.CLI)
 			self.K = Keys (self.S.UserName, getpass.getpass ("Please enter password for " + self.S.UserName + ": "))
 			if self.K.UserKey != self.K.IllegalKey:
 				self.PasswordAccepted = True
 		except:
-			HL.Log ("CLI.py: Wrong password! Try again. :P", 'E', 10)
+			HL.Log ("CLI.py: Wrong password! Try again. :P", 'E', LogT.CLI)
 	
 	
 	
@@ -53,12 +54,12 @@ class CLI:
 		
 		if Args.password:
 			try:
-				HL.Log ("CLI.py: Loading API Key(s)...", 'D', 10)
+				HL.Log ("CLI.py: Loading API Key(s)...", 'D', LogT.CLI)
 				self.K = Keys (self.S.UserName, Args.password)
 				if self.K.UserKey != self.K.IllegalKey:
 					self.PasswordAccepted = True
 			except:
-				HL.Log ("CLI.py: Wrong password! Try again. :P", 'E', 10)
+				HL.Log ("CLI.py: Wrong password! Try again. :P", 'E', LogT.CLI)
 				sys.exit ()
 		
 		if Args.openai_key:

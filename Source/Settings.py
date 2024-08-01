@@ -4,6 +4,7 @@ import os
 import pickle
 
 from HexaLibPython import HexaLog as HL
+import Source.LogTrace as LogT
 
 
 class Settings:
@@ -28,7 +29,7 @@ class Settings:
 		else:
 			self.UserName = ""
 			if os.path.isfile (self.SettingsFile):
-				HL.Log ("Settings.py: Loading settings!", 'I', 8)
+				HL.Log ("Settings.py: Loading settings!", 'I', LogT.Settings)
 				with open (self.SettingsFile, "rb") as File:
 					TempObj = pickle.load (File)
 					self.UserName = TempObj.UserName
@@ -37,12 +38,12 @@ class Settings:
 					self.AutoContext = TempObj.AutoContext
 					try:
 						if TempObj.SoftwareVersion == 0.2:
-							HL.Log ("Settings.py: HexaPA version: v" + str (self.SoftwareVersion), 'I', 8)
+							HL.Log ("Settings.py: HexaPA version: v" + str (self.SoftwareVersion), 'I', LogT.Settings)
 							self.API = TempObj.API
 							self.AIModel = TempObj.AIModel
 						
 						if TempObj.SoftwareVersion == 0.3:
-							HL.Log ("Settings.py: HexaPA version: v" + str (self.SoftwareVersion), 'I', 8)
+							HL.Log ("Settings.py: HexaPA version: v" + str (self.SoftwareVersion), 'I', LogT.Settings)
 							self.API = TempObj.API
 							self.AIModel = TempObj.AIModel
 							Temperature = TempObj.Temperature
@@ -53,7 +54,7 @@ class Settings:
 					except:
 						pass
 			else:
-				HL.Log ("Settings.py: " + self.SettingsFile + " not found!", 'W', 8)
+				HL.Log ("Settings.py: " + self.SettingsFile + " not found!", 'W', LogT.Settings)
 	
 	
 	
@@ -70,6 +71,6 @@ class Settings:
 		TempObj.TopP = self.TopP
 		TempObj.PresencePenalty = self.PresencePenalty
 		TempObj.PresencePenalty = self.FrequencyPenalty
-		HL.Log ("Settings.py: Saving settings!", 'I', 8)
+		HL.Log ("Settings.py: Saving settings!", 'I', LogT.Settings)
 		with open (self.SettingsFile, "wb") as File:
 			pickle.dump (TempObj, File)
