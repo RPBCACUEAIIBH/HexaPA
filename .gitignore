@@ -1,6 +1,7 @@
 Ignore/*
 Conversations/*
 Export/*
+Audio/*
 Presets/UserPresets/*
 .Keys.bin
 .Settings.bin

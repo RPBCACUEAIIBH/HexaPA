@@ -20,6 +20,7 @@ from Source.Data import *
 from Source.Settings import *
 from Source.Options import *
 from Source.Commands import *
+from Source.TTS import *
 
 
 class GUI:
@@ -54,7 +55,6 @@ class GUI:
 		self.CtrlShiftRBinding = None
 		self.CtrlShiftHBinding = None
 		self.CtrlABinding = None # [Ctrl] + [A] for selecting all text in focused textbox... (everywhere...)
-		
 	
 	
 	
@@ -95,7 +95,10 @@ class GUI:
 	
 	
 	
-	
+	def InitTTS (self):
+		HL.Log ("GUI.py: TTS WDir: " + self.S.WorkDir.TTSDir, 'I', LogT.GUI)
+		TTS (self.S.API, self.S.TTSModel, self.S.WorkDir.TTSDir, self.S.KeepAudio) # Record = false, Key = None) # self.K.Key_OpenAI
+		TTS.Read ("Testing TTS-1 with Onyx voice.", self.S.TTSVoiceMale, "TestTTS")
 	
 	
 	
@@ -493,6 +496,9 @@ class GUI:
 			self.CtrlABinding = self.Window.bind ('<Control-a>', lambda event: event.widget.select_range (0, 'end')) # [Ctrl / Cmd] + [A]
 		else:
 			self.CtrlABinding = self.Window.bind ('<Command-a>', lambda event: event.widget.select_range (0, 'end')) # [Ctrl / Cmd] + [A]
+		
+		### TTS
+		self.InitTTS ()
 	
 	
 	

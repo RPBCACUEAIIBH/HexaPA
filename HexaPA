@@ -47,7 +47,6 @@ while PasswordAccepted == False:
 
 Conversation = None
 if PasswordAccepted == True:
-	WDir = Source.TempDir ()
 	UI.SetKeys (K) # New window created here...
 	if K.Key_OpenAI:
 		HL.HexaLog.Log ("Main: Testing OpenAI API key...", 'D', Source.LogTrace.Main)
@@ -70,7 +69,7 @@ if PasswordAccepted == True:
 	S.SaveSettings ()
 	HL.HexaLog.Log ("Main: Saving logs, then exitting.", 'I', Source.LogTrace.Main)
 	HL.HexaLog.Log ("", 'I', Source.LogTrace.Main) # Logs are appended, this makes it easier to see in the log file where the program is closed.
-	WDir.Discard ()
+	S.WorkDir.Discard ()
 else:
 	HL.HexaLog.Log ("Main: No password, no chat! :P Good bye!", 'E', Source.LogTrace.Main)
 	HL.HexaLog.Log ("", 'I', Source.LogTrace.Main) # Logs are appended, this makes it easier to see in the log file where the program is closed.

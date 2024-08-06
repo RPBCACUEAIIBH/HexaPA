@@ -5,11 +5,12 @@ import pickle
 
 from HexaLibPython import HexaLog as HL
 import Source.LogTrace as LogT
+import Source.TempDir
 
 
 class Settings:
 	SettingsFile = ".Settings.bin"
-	SoftwareVersion = 0.3 # These should not be loaded, to avoid using old version when updated, but must be saved to check for old...
+	SoftwareVersion = 0.4 # These should not be loaded, to avoid using old version when updated, but must be saved to check for old...
 	DataVersion = 0.2 # These should not be loaded, to avoid using old version when updated...
 	UserName = None
 	MaxContextMsg = 100 # Max Number of messages to send to the AI. (Multiples of 2 recommended.)
@@ -18,6 +19,11 @@ class Settings:
 	AutoContext = True # Auto / selected context inclusion.
 	API = "OpenAI"
 	AIModel = "gpt-3.5-turbo" # For now...
+	WorkDir = Source.TempDir.TempDir ()
+	TTSModel = "tts-1"
+	TTSVoiceMale = "onyx"
+	TTSVoiceFemale = "nova"
+	KeepAudio = False
 	Temperature = 0.2
 	TopP = 0.95
 	PresencePenalty = 0.0
@@ -46,11 +52,25 @@ class Settings:
 							HL.Log ("Settings.py: HexaPA version: v" + str (self.SoftwareVersion), 'I', LogT.Settings)
 							self.API = TempObj.API
 							self.AIModel = TempObj.AIModel
-							Temperature = TempObj.Temperature
-							TopP = TempObj.TopP
-							PresencePenalty = TempObj.PresencePenalty
-							FrequencyPenalty = TempObj.PresencePenalty
+							self.Temperature = TempObj.Temperature
+							self.TopP = TempObj.TopP
+							self.PresencePenalty = TempObj.PresencePenalty
+							self.FrequencyPenalty = TempObj.PresencePenalty
 							self.MaxOTokens = TempObj.MaxOTokens
+						
+						if TempObj.SoftwareVersion == 0.4:
+							HL.Log ("Settings.py: HexaPA version: v" + str (self.SoftwareVersion), 'I', LogT.Settings)
+							self.API = TempObj.API
+							self.AIModel = TempObj.AIModel
+							self.Temperature = TempObj.Temperature
+							self.TopP = TempObj.TopP
+							self.PresencePenalty = TempObj.PresencePenalty
+							self.FrequencyPenalty = TempObj.PresencePenalty
+							self.MaxOTokens = TempObj.MaxOTokens
+							self.TTSModel = TempObj.TTSModel
+							self.TTSVoiceMale = TempObj.TTSVoiceMale
+							self.TTSVoiceFemale = TempObj.TTSVoiceFemale
+							self.KeepAudio = TempObj.KeepAudio
 					except:
 						pass
 			else:
@@ -71,6 +91,10 @@ class Settings:
 		TempObj.TopP = self.TopP
 		TempObj.PresencePenalty = self.PresencePenalty
 		TempObj.PresencePenalty = self.FrequencyPenalty
+		TempObj.TTSModel = self.TTSModel
+		TempObj.TTSVoiceMale = self.TTSVoiceMale
+		TempObj.TTSVoiceFemale = self.TTSVoiceFemale
+		TempObj.KeepAudio = self.KeepAudio
 		HL.Log ("Settings.py: Saving settings!", 'I', LogT.Settings)
 		with open (self.SettingsFile, "wb") as File:
 			pickle.dump (TempObj, File)
