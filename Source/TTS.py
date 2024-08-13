@@ -13,12 +13,6 @@ from Source.Keys import *
 import Source.LogTrace as LogT
 
 
-class APIError:
-	ErrorMessage = ""
-	object = "Error"
-	usage = {"completion_tokens": 0,"prompt_tokens": 0,"total_tokens": 0}
-
-
 class TTS:
 	API = None
 	Disabled_OpenAI = True

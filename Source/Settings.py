@@ -28,6 +28,7 @@ class Settings:
 	TopP = 0.95
 	PresencePenalty = 0.0
 	FrequencyPenalty = 0.0
+	STTModel = "whisper-1"
 	
 	def __init__ (self, UserName = None):
 		if UserName != None:
@@ -71,6 +72,7 @@ class Settings:
 							self.TTSVoiceMale = TempObj.TTSVoiceMale
 							self.TTSVoiceFemale = TempObj.TTSVoiceFemale
 							self.KeepAudio = TempObj.KeepAudio
+							self.STTModel = TempObj.STTModel
 					except:
 						pass
 			else:
@@ -95,6 +97,7 @@ class Settings:
 		TempObj.TTSVoiceMale = self.TTSVoiceMale
 		TempObj.TTSVoiceFemale = self.TTSVoiceFemale
 		TempObj.KeepAudio = self.KeepAudio
+		TempObj.STTModel = self.STTModel
 		HL.Log ("Settings.py: Saving settings!", 'I', LogT.Settings)
 		with open (self.SettingsFile, "wb") as File:
 			pickle.dump (TempObj, File)

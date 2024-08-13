@@ -14,3 +14,4 @@ class LogTrace:
 	CLI = 10
 	TempDir = 11
 	TTS = 12
+	STT = 13
