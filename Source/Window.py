@@ -153,6 +153,25 @@ class Window:
 	
 	
 	@staticmethod
+	def ImageButton (Parent, Row, Column, Sticky, Img, Command, ArgList = None, Width = 30, Height = 1, PadX = Theme.PadX, PadY = Theme.PadY, TooltipLabel = None, TooltipText = ""):
+		if ArgList == None:
+			ImageButton = tk.Button (Parent, command = Command, bg = Theme.ButtonBG, activebackground = Theme.ActiveButtonBG, borderwidth = 0, highlightthickness = 0, relief = "flat", width = Width, height = Height, compound = tk.CENTER)
+		else:
+			ImageButton = tk.Button (Parent, command = lambda: Command (ArgList), bg = Theme.ButtonBG, activebackground = Theme.ActiveButtonBG, borderwidth = 0, highlightthickness = 0, relief = "flat", width = Width, height = Height, compound = tk.CENTER)
+		ImageButton.Image = None
+		ImageButton.Image = ImageTk.PhotoImage (Image.open (io.BytesIO (cairosvg.svg2png (bytestring = open(Img, "rb").read (), scale = 0.32))))
+		ImageButton.configure (image = ImageButton.Image, disabledforeground = Theme.SmallText) # This one only seems to works when configured...
+		ImageButton.grid (row = Row, column = Column, padx = PadX, pady = PadY, sticky = Sticky)
+		if TooltipLabel != None:
+			ImageButton.Tooltip = None
+			ImageButton.Tooltip = Tooltip (TooltipLabel, TooltipText)
+			ImageButton.bind ("<Enter>", ImageButton.Tooltip.ShowTooltip)
+			ImageButton.bind ("<Leave>", ImageButton.Tooltip.HideTooltip)
+		return ImageButton
+	
+	
+	
+	@staticmethod
 	def TextBox (Parent, Row, Column, PadX = Theme.PadX, PadY = Theme.PadY, Sticky = None, Height = 3, Text = None, Wrap = "word", TooltipLabel = None, TooltipText = ""):
 		Frame = tk.Frame (Parent, bg = Theme.BGColor)
 		Frame.grid (row = Row, column = Column, padx = PadX, pady = PadY, sticky = Sticky)

@@ -32,7 +32,7 @@ class GUI:
 		self.S = SettingsObject
 		self.Window = tk.Tk (className = "HexaPA") # Not sure why the className is displayed as "HexaPA" instead of "HexaPA" as I set it... (on ubuntu)
 		self.Window.title ("HexaPA")
-		self.WinWidth = 640
+		self.WinWidth = 720
 		self.WinHeight = self.Window.winfo_screenheight ()
 		self.WinPosX = self.Window.winfo_screenwidth () - self.WinWidth
 		self.WinPosY = 0
@@ -46,6 +46,8 @@ class GUI:
 		# self. is important for self.OSRCLogo otherwise the data is discarded before displaying so you get no error but no image either!
 		self.OSRCLogo = ImageTk.PhotoImage (Image.open (io.BytesIO (cairosvg.svg2png (bytestring = open(self.SVGFile_OSRCLogo, "rb").read (), scale = 1)))) # Either use: "scale = 1" OR "output_width = 150, output_height = 150"
 		self.Window.iconphoto (True, self.OSRCLogo)
+		self.SVGFile_SpeakerIcon = "Images/Speaker.svg"
+		self.SVGFile_MicIcon = "Images/Microphone.svg"
 		self.EnterBinding = None
 		self.SpaceBinding = None
 		self.EscBinding = None
@@ -55,6 +57,7 @@ class GUI:
 		self.CtrlShiftRBinding = None
 		self.CtrlShiftHBinding = None
 		self.CtrlABinding = None # [Ctrl] + [A] for selecting all text in focused textbox... (everywhere...)
+		self.TTSInitialized = False
 	
 	
 	
@@ -96,9 +99,10 @@ class GUI:
 	
 	
 	def InitTTS (self):
+		self.TTSInitialized = True
 		HL.Log ("GUI.py: TTS WDir: " + self.S.WorkDir.TTSDir, 'I', LogT.GUI)
-		TTS (self.S.API, self.S.TTSModel, self.S.WorkDir.TTSDir, self.S.KeepAudio) # Record = false, Key = None) # self.K.Key_OpenAI
-		TTS.Read ("Testing TTS-1 with Onyx voice.", self.S.TTSVoiceMale, "TestTTS")
+		TTS (self.S.API, self.S.TTSModel, self.S.WorkDir.TTSDir, self.S.KeepAudio)
+		#TTS.Read ("Testing TTS-1 with Onyx voice.", self.S.TTSVoiceMale, "TestTTS")
 	
 	
 	
@@ -498,7 +502,8 @@ class GUI:
 			self.CtrlABinding = self.Window.bind ('<Command-a>', lambda event: event.widget.select_range (0, 'end')) # [Ctrl / Cmd] + [A]
 		
 		### TTS
-		self.InitTTS ()
+		if not self.TTSInitialized:
+			self.InitTTS ()
 	
 	
 	
@@ -690,6 +695,9 @@ class GUI:
 			self.ChatWindow.Messages[Index].TextBox.configure (height = 35)
 			self.ChatWindow.Messages[Index].IncludeButton.config (state = tk.DISABLED)
 			self.ChatWindow.Messages[Index].ExcludeButton.config (state = tk.DISABLED)
+		else:
+			self.ChatWindow.Messages[Index].ReadButton = None
+			self.ChatWindow.Messages[Index].ReadButton = Window.ImageButton (self.ChatWindow.Messages[Index].ButtonFrame, 0, 4, "NS", self.SVGFile_SpeakerIcon, lambda: TTS.Read (self.ChatWindow.Messages[Index].TextBox.get ("1.0", "end").strip (), self.S.TTSVoiceMale, "TestTTS"), Width = 30, PadX = 0, PadY = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Reads the message aloud using AI text to speech function.")
 		self.ChatWindow.Messages[Index].TextBox.focus ()
 		
 		# Refresh canvas scroll region
@@ -927,14 +935,17 @@ class GUI:
 		self.ChatWindow.UserInputWrap = tk.BooleanVar (value = 1)
 		self.ChatWindow.SpacerFrame = None
 		self.ChatWindow.SpacerFrame = Window.Frame (self.ChatWindow.UserInputButtons, Row = 0, Column = 2, PadX = 0, PadY = 0, Sticky = "NSEW")
+		#self.ChatWindow.VoiceInputButton = None
+		self.ChatWindow.InputReadButton = None
+		self.ChatWindow.InputReadButton = Window.ImageButton (self.ChatWindow.UserInputButtons, 0, 4, "NSE", self.SVGFile_SpeakerIcon, lambda: TTS.Read (self.ChatWindow.UserInputTextBox.get ("1.0", "end").strip (), self.S.TTSVoiceMale, "TestTTS"), TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Reads text from input using AI text to speech function.")
 		self.ChatWindow.WrapButton = None
-		self.ChatWindow.WrapButton = Window.CheckButton (self.ChatWindow.UserInputButtons, 0, 3, "NSE", "Wrap", self.ChatWindow.UserInputWrap, lambda: self.ChatWindow.UserInputTextBox.configure (wrap = ("word" if self.ChatWindow.UserInputWrap.get () else "none")), Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Wrap/not wrap text in the prompt textbox.\n(Text is readable wrapped, however this may not be desirable for code.)")
+		self.ChatWindow.WrapButton = Window.CheckButton (self.ChatWindow.UserInputButtons, 0, 5, "NSE", "Wrap", self.ChatWindow.UserInputWrap, lambda: self.ChatWindow.UserInputTextBox.configure (wrap = ("word" if self.ChatWindow.UserInputWrap.get () else "none")), Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Wrap/not wrap text in the prompt textbox.\n(Text is readable wrapped, however this may not be desirable for code.)")
 		self.ChatWindow.WrapButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
 		self.ChatWindow.TokenButton = None
-		self.ChatWindow.TokenButton = Window.Button (self.ChatWindow.UserInputButtons, 0, 4, "NSE", "Count Tokens", self.ChatCountTokensAction, Width = 11, Height = 1, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Estimate input tokens for rules, context, and prompt.\n(May not be entirely accurate...)")
+		self.ChatWindow.TokenButton = Window.Button (self.ChatWindow.UserInputButtons, 0, 6, "NSE", "Count Tokens", self.ChatCountTokensAction, Width = 11, Height = 1, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Estimate input tokens for rules, context, and prompt.\n(May not be entirely accurate...)")
 		self.ChatWindow.TokenButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
 		self.ChatWindow.SendButton = None
-		self.ChatWindow.SendButton = Window.Button (self.ChatWindow.UserInputButtons, 0, 5, "NSE", "Send", lambda: self.ChatSendAction () if self.ChatWindow.UserInputTextBox.get ("1.0", "end-1c") else None, Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Send text to the AI, and wait for response.\nHotkey/combination: [Ctrl] + [Enter]")
+		self.ChatWindow.SendButton = Window.Button (self.ChatWindow.UserInputButtons, 0, 7, "NSE", "Send", lambda: self.ChatSendAction () if self.ChatWindow.UserInputTextBox.get ("1.0", "end-1c") else None, Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Send text to the AI, and wait for response.\nHotkey/combination: [Ctrl] + [Enter]")
 		self.ChatWindow.SendButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
 		if Stats == None:
 			Stats = ""

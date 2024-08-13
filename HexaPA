@@ -68,8 +68,8 @@ if PasswordAccepted == True:
 			Conversation.Save ()
 	S.SaveSettings ()
 	HL.HexaLog.Log ("Main: Saving logs, then exitting.", 'I', Source.LogTrace.Main)
-	HL.HexaLog.Log ("", 'I', Source.LogTrace.Main) # Logs are appended, this makes it easier to see in the log file where the program is closed.
 	S.WorkDir.Discard ()
+	HL.HexaLog.Log ("", 'I', Source.LogTrace.Main) # Logs are appended, this makes it easier to see in the log file where the program is closed.
 else:
 	HL.HexaLog.Log ("Main: No password, no chat! :P Good bye!", 'E', Source.LogTrace.Main)
 	HL.HexaLog.Log ("", 'I', Source.LogTrace.Main) # Logs are appended, this makes it easier to see in the log file where the program is closed.

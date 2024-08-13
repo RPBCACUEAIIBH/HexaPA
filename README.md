@@ -134,4 +134,4 @@ pip install --upgrade openai tiktoken pydub simpleaudio
 ### Version v0.4
 - Debugging improvements... (I really should have done this a long time ago...)
 - Added TTS support.
-- BugFixes - It was saving but not loading AI settings on launch. Instead it used the default. It's now fixed.
+- Bug fix - It was saving but not loading AI settings on launch. Instead it used the default. It's now fixed.
