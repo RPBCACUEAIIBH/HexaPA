@@ -38,7 +38,10 @@ class STT:
 				Response = openai.audio.transcriptions.create (
 					model = cls.Model,
 					file = open (AudioFile, "rb")
+					#prompt = "text from prevous transcription", # This may help with consistency, but it will only use the last 244 tokens.
 				)
+				# It can also be post processed with text model... https://platform.openai.com/docs/guides/speech-to-text/improving-reliability
+				# Translation can only be done from another language to English. Syntax is the same, but call openai.audio.translation.create ()
 				cls.Response_OpenAI = Response.text
 				HL.Log ("STT.py: The AI's answer (by Model: " + cls.Model + ") saved to: " + cls.Response_OpenAI, 'D', LogT.STT)
 				return cls.Response_OpenAI

@@ -100,7 +100,8 @@ Installed separately:
 - openai (for accessing OpenAI API)
 - tiktoken (for OpenAI token counting)
 - pydub
-- simpleaudio
+- librosa (pydub has a bug in detect_silence(), I needed an alternative. I may replace it entirely...)
+- sounddevice
 
 
 
@@ -133,5 +134,5 @@ pip install --upgrade openai tiktoken pydub simpleaudio
 
 ### Version v0.4
 - Debugging improvements... (I really should have done this a long time ago...)
-- Added TTS support.
+- Added TTS and STT support. (STT NOT FIHISHED!)
 - Bug fix - It was saving but not loading AI settings on launch. Instead it used the default. It's now fixed.
