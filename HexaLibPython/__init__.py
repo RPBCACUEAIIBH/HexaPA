@@ -10,7 +10,7 @@ for ModulePath in glob.glob (os.path.join (DirectoryPath, "*.py")):
 		continue
 	ModuleName = os.path.basename (ModulePath)[:-3]
 	try:
-		print (f"Debug: Importing {ModuleName}...")
+		#print (f"Debug: Importing {ModuleName}...")
 		exec (f"from .{ModuleName} import *")
 	except Exception as e:
 		print (__file__)
