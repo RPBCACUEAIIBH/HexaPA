@@ -134,5 +134,6 @@ pip install --upgrade openai tiktoken pydub simpleaudio
 
 ### Version v0.4
 - Debugging improvements... (I really should have done this a long time ago...)
+- Updated models GPT-4o (Cheaper then GPT-4-turbo) and GPT-4o-mini Cheaper faster, and smarter then GPT-3.5 (Which is being retired.)
 - Added TTS and STT support. (STT NOT FIHISHED!)
 - Bug fix - It was saving but not loading AI settings on launch. Instead it used the default. It's now fixed.

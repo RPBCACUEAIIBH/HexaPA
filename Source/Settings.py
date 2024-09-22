@@ -18,7 +18,7 @@ class Settings:
 	MaxOTokens = 512 # Max amount of Output tokens.
 	AutoContext = True # Auto / selected context inclusion.
 	API = "OpenAI"
-	AIModel = "gpt-3.5-turbo" # For now...
+	AIModel = "gpt-4o-mini" # For now...
 	WorkDir = Source.TempDir.TempDir ()
 	TTSModel = "tts-1"
 	TTSVoiceMale = "onyx"

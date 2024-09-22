@@ -290,6 +290,7 @@ class GUI:
 	def CreateNewChat (self):
 		self.Window.unbind ('<Return>', self.EnterBinding)
 		self.S.AIModel = self.MainWindow.Model.get ()
+		HL.Log ("GUI.py: Selected model: " + self.S.AIModel, 'D', LogT.GUI)
 		self.S.MaxContextMsg = int (self.MainWindow.MaxContextMsgEntry.get ())
 		self.S.MaxTokens = int (self.MainWindow.MaxTokensEntry.get ())
 		self.S.MaxOTokens = int (self.MainWindow.MaxOTokensEntry.get ())
@@ -310,6 +311,7 @@ class GUI:
 	def ContinueExistingChat (self, ArgList):
 		self.Window.unbind ('<Return>', self.EnterBinding)
 		self.S.AIModel = self.MainWindow.Model.get ()
+		HL.Log ("GUI.py: Selected model: " + self.S.AIModel, 'D', LogT.GUI)
 		self.S.MaxContextMsg = int (self.MainWindow.MaxContextMsgEntry.get ())
 		self.S.MaxTokens = int (self.MainWindow.MaxTokensEntry.get ())
 		self.S.MaxOTokens = int (self.MainWindow.MaxOTokensEntry.get ())
@@ -411,19 +413,32 @@ class GUI:
 		self.MainWindow.ModelLabel = None
 		self.MainWindow.ModelLabel = Window.Label (self.MainWindow.ModelFrame, 0, 0, "W", "Model selection:", Theme.BGColor, Anchor = "w", Width = None)
 		self.MainWindow.Model = tk.StringVar ()
-		self.MainWindow.GPT3_5Button = None
+		self.MainWindow.GPT4oMiniButton = None
 		self.MainWindow.SpacerLabel = None
+		self.MainWindow.GPT4oButton = None
+		self.MainWindow.Spacer2Label = None
 		self.MainWindow.GPT4Button = None
-		GPT3_5Tooltip = "Cheaper, faster, fairly capable, available to eveyone, with 16K context length but 4k output.\n(Legacy GPT-3.5 Turbo with 16k context length auto selected if allowed tokens > 2048)"
-		GPT4Tooltip = "More expensive, slower, very capable, available after first payment of $1, with 128K context length.\n(Output limited to 4096 tokens, and no larger context model available...)"
-		if self.S.AIModel == "gpt-3.5-turbo":
-			self.MainWindow.GPT3_5Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 1, "W", "GPT-3.5 Turbo", self.MainWindow.Model, "gpt-3.5-turbo", Default = True, Width = 13, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT3_5Tooltip)
+		GPT4oMiniTooltip = "Cheaper, faster, fairly capable, available to eveyone, with 128K context length but 16k output.\n(Successor of GPT 3.5 Turbo, Training Data: Oct 2023, Output Token Limit 16384.)"
+		GPT4oTooltip = "More expensive, slower then 4o Mini but faster and cheaper then 4 Turbo, with 128K context length.\n(Successor of GPT 4 Turbo, Training Data: Oct 2023, Output Token Limit 4096.)"
+		GPT4Tooltip = "More expensive, slower, very capable, available after first payment of $1, with 128K context length.\n(Training Data: Dec 2023, Output Token Limit 4096.)"
+		if self.S.AIModel == "gpt-4o-mini":
+			self.MainWindow.GPT4oMiniButton = Window.RadioButton (self.MainWindow.ModelFrame, 0, 1, "W", "GPT-4o Mini", self.MainWindow.Model, "gpt-4o-mini", Default = True, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oMiniTooltip)
 			self.MainWindow.SpacerLabel = Window.Label (self.MainWindow.ModelFrame, 0, 2, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
-			self.MainWindow.GPT4Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 3, "W", "GPT-4 Turbo", self.MainWindow.Model, "gpt-4-turbo", Default = False, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4Tooltip)
+			self.MainWindow.GPT4oButton = Window.RadioButton (self.MainWindow.ModelFrame, 0, 3, "W", "GPT-4o", self.MainWindow.Model, "gpt-4o", Default = False, Width = 8, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oTooltip)
+			self.MainWindow.Spacer2Label = Window.Label (self.MainWindow.ModelFrame, 0, 4, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
+			self.MainWindow.GPT4Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 5, "W", "GPT-4 Turbo", self.MainWindow.Model, "gpt-4-turbo", Default = False, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4Tooltip)
+		elif self.S.AIModel == "gpt-4o":
+			self.MainWindow.GPT4oMiniButton = Window.RadioButton (self.MainWindow.ModelFrame, 0, 1, "W", "GPT-4o Mini", self.MainWindow.Model, "gpt-4o-mini", Default = False, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oMiniTooltip)
+			self.MainWindow.SpacerLabel = Window.Label (self.MainWindow.ModelFrame, 0, 2, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
+			self.MainWindow.GPT4oButton = Window.RadioButton (self.MainWindow.ModelFrame, 0, 3, "W", "GPT-4o", self.MainWindow.Model, "gpt-4o", Default = True, Width = 8, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oTooltip)
+			self.MainWindow.SpacerLabel = Window.Label (self.MainWindow.ModelFrame, 0, 4, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
+			self.MainWindow.GPT4Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 5, "W", "GPT-4 Turbo", self.MainWindow.Model, "gpt-4-turbo", Default = False, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4Tooltip)
 		else:
-			self.MainWindow.GPT3_5Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 1, "W", "GPT-3.5 Turbo", self.MainWindow.Model, "gpt-3.5-turbo", Default = False, Width = 13, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT3_5Tooltip)
+			self.MainWindow.GPT4oMiniButton = Window.RadioButton (self.MainWindow.ModelFrame, 0, 1, "W", "GPT-4o Mini", self.MainWindow.Model, "gpt-4o-mini", Default = False, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oMiniTooltip)
 			self.MainWindow.SpacerLabel = Window.Label (self.MainWindow.ModelFrame, 0, 2, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
-			self.MainWindow.GPT4Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 3, "W", "GPT-4 Turbo", self.MainWindow.Model, "gpt-4-turbo", Default = True, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4Tooltip)
+			self.MainWindow.GPT4oButton = Window.RadioButton (self.MainWindow.ModelFrame, 0, 3, "W", "GPT-4o", self.MainWindow.Model, "gpt-4o", Default = False, Width = 8, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oTooltip)
+			self.MainWindow.SpacerLabel = Window.Label (self.MainWindow.ModelFrame, 0, 4, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
+			self.MainWindow.GPT4Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 5, "W", "GPT-4 Turbo", self.MainWindow.Model, "gpt-4-turbo", Default = True, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4Tooltip)
 		
 		## Max Input Tokens
 		self.MainWindow.MaxTokensFrame = None
@@ -432,10 +447,10 @@ class GUI:
 		self.MainWindow.MaxTokensLabel = None
 		self.MainWindow.MaxTokensLabel = Window.Label (self.MainWindow.MaxTokensFrame, 0, 0, "W", "Max Input Tokens (Rules + Context + Prompt):", Theme.BGColor, Anchor = "w", Width = None)
 		self.MainWindow.MaxTokensEntry = None
-		if self.S.AIModel == "gpt-3.5-turbo":
-			self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 7, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits input tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages.\n(Auto switch between 4k(0125) and 16k(Legacy) at 0 input tokens or if input + output tokens > 4000 and defaults to 16k above 2048 input tokens.)")
-		else:
-			self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 7, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits intput tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages.\n(Max 128k total tokens but max 4K output is part of that with 0125 model.)")
+		if self.S.AIModel == "gpt-4o-mini":
+			self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 7, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits input tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages.\n(Max 128k total tokens but max 16K output is part of that.)")
+		else: # both 4o and 4-turbo
+			self.MainWindow.MaxTokensEntry = Window.Entry (self.MainWindow.MaxTokensFrame, 0, 1, "EW", Text = str (self.S.MaxTokens), Width = 7, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits intput tokens you pay for, but may also cripples the AI's ability to \"remember\" previous messages.\n(Max 128k total tokens but max 4K output is part of that.)")
 		
 		## Max Context Messages
 		self.MainWindow.MaxContextMsgFrame = None
@@ -453,10 +468,7 @@ class GUI:
 		self.MainWindow.MaxOTokensLabel = None
 		self.MainWindow.MaxOTokensLabel = Window.Label (self.MainWindow.MaxOTokensFrame, 0, 0, "W", "Max Output Tokens (AI generated):", Theme.BGColor, Anchor = "w", Width = None)
 		self.MainWindow.MaxOTokensEntry = None
-		if self.S.AIModel == "gpt-3.5-turbo":
-			self.MainWindow.MaxOTokensEntry = Window.Entry (self.MainWindow.MaxOTokensFrame, 0, 1, "EW", Text = str (self.S.MaxOTokens), Width = 7, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits output tokens you pay for, but may also cut the AI's response short.\n(Auto switch between 4k(0125) and 16k(Legacy) at 0 input tokens or if input + output tokens > 4000 and defaults to 16k above 2048 input tokens.)")
-		else:
-			self.MainWindow.MaxOTokensEntry = Window.Entry (self.MainWindow.MaxOTokensFrame, 0, 1, "EW", Text = str (self.S.MaxOTokens), Width = 7, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits output tokens you pay for, but may also cut the AI's response short.\n(Max 128k total tokens but max 4K output is part of that with 0125 model.)")
+		self.MainWindow.MaxOTokensEntry = Window.Entry (self.MainWindow.MaxOTokensFrame, 0, 1, "EW", Text = str (self.S.MaxOTokens), Width = 7, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = "Limits output tokens you pay for, but may also cut the AI's response short.\n(Automatically reduced when rules + context + prompt tokens exceed 128k - max output tokens.)")
 		
 		## Temperature
 		self.MainWindow.TempFrame = None
@@ -749,18 +761,7 @@ class GUI:
 		
 		# Calculate remaining tokens for context
 		T = Tokenizer (self.S.API, self.S.AIModel, Messages)
-		ForceLargeContext = False
-		MaxContextTokens = 4000 # 4k model
-		if self.S.AIModel == "gpt-3.5-turbo":
-			if self.S.MaxTokens == 0: # Context length determined by message count, and length.
-				MaxContextTokens = 16000
-			if self.S.MaxTokens > 2048: # 16k model
-				MaxContextTokens = 16000
-				ForceLargeContext = True
-		elif self.S.AIModel == "gpt-4-turbo": # Very large 128k context but max 4k output
-			MaxContextTokens = 128000
-		HL.Log ("GUI.py: Selected context length (for " + self.S.AIModel + "): " + str (MaxContextTokens), 'D', LogT.GUI)
-		
+		MaxContextTokens = 128000 # Since gpt-4-turbo, gpt-4o, gpt-4o-mini all have the same large context window. (Earlier models had far less, and different sizes...)
 		if self.S.MaxTokens == 0:
 			MaxContextTokens = MaxContextTokens - self.S.MaxOTokens - T.TokenCount_Rules - T.TokenCount_Prompt
 		else:
@@ -783,6 +784,9 @@ class GUI:
 		T = Tokenizer (self.S.API, self.S.AIModel, Messages)
 		self.ChatWindow.StatsLabel.config (text = "Token estimations:   Total to send: " + str (T.TokenCount_Total) + "\nRules: " + str (T.TokenCount_Rules) + "   Context: " + str (T.TokenCount_Context) + "   Prompt: " + str (T.TokenCount_Prompt))
 		self.Window.update ()
+		
+		# This is for testing only... ForceLargeContext should be False for release!
+		ForceLargeContext = False
 		if ForceLargeContext == True:
 			EstimatedTokens = MaxContextTokens
 		else:
