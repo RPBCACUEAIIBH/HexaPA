@@ -1,5 +1,5 @@
 #! /bin/python3
-
+print (__file__)
 
 import os
 import glob
@@ -9,8 +9,8 @@ for ModulePath in glob.glob (os.path.join (DirectoryPath, "*.py")):
 	if ModulePath == __file__ or os.path.basename (ModulePath).startswith ("_"):
 		continue
 	ModuleName = os.path.basename (ModulePath)[:-3]
-	print (f"Debug: Importing {ModuleName}...")
 	try:
+		print (f"Debug: Importing {ModuleName}...")
 		exec (f"from .{ModuleName} import *")
 	except Exception as e:
 		print (__file__)
