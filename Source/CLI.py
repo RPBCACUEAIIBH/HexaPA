@@ -46,6 +46,7 @@ class CLI:
 			print (License + "\n")
 			print (Copyright)
 			print (BSD3CL_Details)
+			self.S.WorkDir.Discard ()
 			sys.exit ()
 		
 		if Args.user:

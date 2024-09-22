@@ -9,6 +9,12 @@ import os
 if not os.path.exists ("Conversations"):
 	os.makedirs ("Conversations")
 
+# At first start it may not exist...
+if not os.path.exists ("Audio"):
+	os.makedirs ("Audio")
+	os.makedirs ("Audio/TTS")
+	os.makedirs ("Audio/Recordings")
+
 # Comment this if you want the log to be appended. (It can get large pretty soon due to multiple debug messages / prompt...)
 if os.path.exists ("Log.log"):
 	os.remove ("Log.log")
