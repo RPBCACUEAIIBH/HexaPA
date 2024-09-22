@@ -1,5 +1,6 @@
 #! /bin/python3
-print (__file__)
+
+#print (__file__)
 
 import os
 import glob
@@ -13,5 +14,4 @@ for ModulePath in glob.glob (os.path.join (DirectoryPath, "*.py")):
 		#print (f"Debug: Importing {ModuleName}...")
 		exec (f"from .{ModuleName} import *")
 	except Exception as e:
-		print (__file__)
 		print (f"Failed to import module {ModuleName}: {e}")
