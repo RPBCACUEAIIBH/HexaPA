@@ -940,8 +940,8 @@ class GUI:
 		self.ChatWindow.UserInputWrap = tk.BooleanVar (value = 1)
 		self.ChatWindow.SpacerFrame = None
 		self.ChatWindow.SpacerFrame = Window.Frame (self.ChatWindow.UserInputButtons, Row = 0, Column = 2, PadX = 0, PadY = 0, Sticky = "NSEW")
-		self.ChatWindow.VoiceInputButton = None
-		self.ChatWindow.VoiceInputButton = Window.ImageButton (self.ChatWindow.UserInputButtons, 0, 3, "NSE", self.SVGFile_MicIcon, lambda: self.ChatWindow.UserInputTextBox.insert ('end', STT.Transcribe ("Audio/TTS/TestTTS.mp3")), PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Voice recording and transcription to text input.")
+		#self.ChatWindow.VoiceInputButton = None
+		#self.ChatWindow.VoiceInputButton = Window.ImageButton (self.ChatWindow.UserInputButtons, 0, 3, "NSE", self.SVGFile_MicIcon, lambda: self.ChatWindow.UserInputTextBox.insert ('end', STT.Transcribe ("Audio/TTS/TestTTS.mp3")), PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Voice recording and transcription to text input.")
 		self.ChatWindow.InputReadButton = None
 		self.ChatWindow.InputReadButton = Window.ImageButton (self.ChatWindow.UserInputButtons, 0, 4, "NSE", self.SVGFile_SpeakerIcon, lambda: TTS.Read (self.ChatWindow.UserInputTextBox.get ("1.0", "end").strip (), self.S.TTSVoiceMale, "TestTTS"), TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Reads text from input using AI text to speech function.")
 		self.ChatWindow.WrapButton = None
