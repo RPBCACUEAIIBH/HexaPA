@@ -263,7 +263,7 @@ class GUI:
 		self.KeyRequestWindow.OpenAIRequestLabel = None
 		self.KeyRequestWindow.OpenAIRequestLabel = Window.Label (self.KeyRequestWindow.OpenAIFrame, 1, 0, "EW", Text, Theme.BGColor, Width = None, PadX = None, PadY = None)
 		self.KeyRequestWindow.OpenAIRequestLabel.bind ("<Button-1>", lambda e: self.Link_OpenAI_API ())
-		Text = "(You will need to register. Once you're logged in, find manage account in the\ntop right corner and set up payment method at billing, then generate an API key.\nIt's affordable, but you may also want to set a monthly limit, just in case.)"
+		Text = "(You will need to register. Once you're logged in, got to API keys on the left and create one.\nIt's affordable, but you may also want to set a monthly limit, just in case.\nThey only train the AI on Chat GPT data but not on API data.)"
 		self.KeyRequestWindow.OpenAIGuideLabel = None
 		self.KeyRequestWindow.OpenAIGuideLabel = Window.Label (self.KeyRequestWindow.OpenAIFrame, 2, 0, "EW", Text, Theme.BGColor, Theme.SmallText, Theme.SmallTextSize, Width = None, PadX = None, PadY = None)
 		self.KeyRequestWindow.OpenAIGuideLabel.bind ("<Button-1>", lambda e: self.Link_OpenAI_API ())
@@ -286,11 +286,11 @@ class GUI:
 		self.KeyRequestWindow.DeepSeekLogo = None
 		self.KeyRequestWindow.DeepSeekLogo = Window.ImageLabel (self.KeyRequestWindow.PoweredByLogo, 0, 1, "W", self.DeepSeekLogo, PadX = 15, PadY = 20, Command = self.Link_DeepSeek_API)
 		
-		Text = "Please enter your OpenAI API key!\nIf you don't have one clik here and get one."
+		Text = "Please enter your DeepSeek API key!\nIf you don't have one clik here and get one."
 		self.KeyRequestWindow.DeepSeekRequestLabel = None
 		self.KeyRequestWindow.DeepSeekRequestLabel = Window.Label (self.KeyRequestWindow.DeepSeekFrame, 1, 0, "EW", Text, Theme.BGColor, Width = None, PadX = None, PadY = None)
 		self.KeyRequestWindow.DeepSeekRequestLabel.bind ("<Button-1>", lambda e: self.Link_DeepSeek_API ())
-		Text = "(You will need to register. Once you're logged in, find manage account in the\ntop right corner and set up payment method at billing, then generate an API key.\nIt's affordable, but you may also want to set a monthly limit, just in case.)"
+		Text = "(You will need to register. Once you're logged in, got to API keys on the left and create one.\nIt's affordable, but you may also want to set a monthly limit, just in case.\nNote that they do train the AI on API data as far as I know.)"
 		self.KeyRequestWindow.DeepSeekGuideLabel = None
 		self.KeyRequestWindow.DeepSeekGuideLabel = Window.Label (self.KeyRequestWindow.DeepSeekFrame, 2, 0, "EW", Text, Theme.BGColor, Theme.SmallText, Theme.SmallTextSize, Width = None, PadX = None, PadY = None)
 		self.KeyRequestWindow.DeepSeekGuideLabel.bind ("<Button-1>", lambda e: self.Link_DeepSeek_API ())
