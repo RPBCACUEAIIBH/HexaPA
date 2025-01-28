@@ -56,15 +56,15 @@ if PasswordAccepted == True:
 	UI.SetKeys (K) # New window created here...
 	if K.Key_OpenAI:
 		HL.HexaLog.Log ("Main: Testing OpenAI API key...", 'D', Source.LogTrace.Main)
-		Source.Communicate (S.API, S.AIModel, K.Key_OpenAI)
-		if Source.Communicate.Disabled_OpenAI != True:
-			UI.Main ()
-		else:
-			HL.HexaLog.Log ("Main: Key invalid, or the service is down. --> Requesting API key.", 'I', Source.LogTrace.Main)
-			UI.RequestKey ("Either the saved key is invalid or the OpenAI service is down!\nPlease check the log file for more information!")
-	else:
+		Source.Communicate (Source.Communicate.API_Lookup.get (S.OpenAI_DefaultModel), S.OpenAI_DefaultModel, K.Key_Lookup.get (Source.Communicate.API_Lookup.get (S.OpenAI_DefaultModel)))
+	if K.Key_DeepSeek:
+		HL.HexaLog.Log ("Main: Testing DeepSeek API key...", 'D', Source.LogTrace.Main)
+		Source.Communicate (Source.Communicate.API_Lookup.get (S.DeepSeek_DefaultModel), S.DeepSeek_DefaultModel, K.Key_Lookup.get (Source.Communicate.API_Lookup.get (S.DeepSeek_DefaultModel)))
+	if Source.Communicate.Disabled_OpenAI == True and Source.Communicate.Disabled_DeepSeek == True:
 		HL.HexaLog.Log ("Main: API Key not found. --> Requesting API key.", 'I', Source.LogTrace.Main)
 		UI.RequestKey ()
+	else:
+		UI.Main ()
 	Conversation = UI.InitChain ()
 	UI.OpenWindow () # Opening new window here.
 

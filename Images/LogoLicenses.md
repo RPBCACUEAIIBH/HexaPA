@@ -2,6 +2,12 @@
 
 
 
+- The applicable license and guidelines for Deepseek logo:
+License CC0 1.0: https://github.com/deepseek-ai/awesome-deepseek-integration/blob/main/LICENSE
+Guidelines: https://github.com/deepseek-ai/awesome-deepseek-integration/blob/main/docs/_logo%20svg/guidelines.md
+
+
+
 - For OSRC logo:
 
 Copyright (c) 2017, Tibor Áser Veres

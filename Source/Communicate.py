@@ -16,15 +16,29 @@ class APIError:
 
 
 class Communicate:
+	API_Lookup = {
+		"gpt-4o-mini": "OpenAI",
+		"gpt-4o": "OpenAI",
+		"gpt-4-turbo": "OpenAI",
+		"deepseek-chat": "DeepSeek"
+	}
 	Disabled_OpenAI = True
+	Disabled_DeepSeek = True
 	Response_OpenAI = None
+	OpenAIBaseURL = openai.base_url
 	
 	
 	
 	@classmethod
 	def __init__ (cls, API, AIModel, Key): # Support for other APIs are planned, for now it's only for OpenAI...
-		if API == "OpenAI":
+		if API == "OpenAI" or API == "DeepSeek":
 			openai.api_key = Key
+			if API == "DeepSeek":
+				openai.base_url = "https://api.deepseek.com"
+				Model = "deepseek-chat"
+			else:
+				openai.base_url = cls.OpenAIBaseURL
+				Model = "gpt-4o-mini"
 			Messages = [
 				{
 					"role": "system",
@@ -37,7 +51,7 @@ class Communicate:
 			]
 			try:
 				cls.Response_OpenAI = openai.chat.completions.create (
-					model = "gpt-4o-mini",
+					model = Model,
 					messages = Messages,
 					temperature = 0, # Only give me what I asked for...
 					top_p = 0.1, # Consider only top 10% probabilities.
@@ -45,35 +59,48 @@ class Communicate:
 					max_tokens = 1, # no need to waste much tokens.
 					frequency_penalty = -2.0 # Focus on the task (hopefully...)
 				)
-				HL.Log ("Communicate.py: Key accepted! The AI's test answer(Model: gpt-4o-mini): " + cls.Response_OpenAI.choices[0].message.content, 'D', LogT.Communicate)
+				HL.Log ("Communicate.py: Key accepted! The AI's test answer(Model: " + Model + "): " + cls.Response_OpenAI.choices[0].message.content, 'D', LogT.Communicate)
 			except Exception as e:
 				HL.Log (f"Communicate.py: An error occurred: {e}", 'E', LogT.Communicate)
-				HL.Log ("Falling back to " + AIModel, 'I', LogT.Communicate)
-				HL.Log ("", 'I', LogT.Communicate) # HexaLog keeps the last line if the Log file is not finished to compress multiple of the same messages, so a different line flushes the error to file...
-				HL.LogToFile ("Log.log", False)
-				try: # Fallback option. More expensive, but still a fraction of a cent... Just in case they gpt-4o-mini model is down.
-					cls.Response_OpenAI = openai.chat.completions.create (
-						model = AIModel, # Latest
-						messages = Messages,
-						temperature = 0, # Only give me what I asked for...
-						top_p = 0.1, # Consider only top 10% probabilities.
-						n = 1, # generate 1 answer. (I think this is default anyway...)
-						max_tokens = 1, # no need to waste much tokens, although may not work properly... Not sure about the exact range, it usually consumes 19-23 tokens even when set to 1.
-						frequency_penalty = -2.0 # Focus on the task (hopefully...)
-					)
-					HL.Log ("Communicate.py: Key accepted! The AI's test answer(" + AIModel + "): " + cls.Response_OpenAI.choices[0].message.content, 'D', LogT.Communicate)
-				except Exception as e:
-					HL.Log (f"Communicate.py: An error occurred: {e}", 'E', LogT.Communicate)
-					HL.Log ("", 'E', LogT.Communicate) # HexaLog keeps the last line if the Log file is not finished to compress multiple of the same messages, so a different line flushes the error to file...
+				if API == "OpenAI":
+					HL.Log ("Falling back to " + AIModel, 'I', LogT.Communicate)
+					HL.Log ("", 'I', LogT.Communicate) # HexaLog keeps the last line if the Log file is not finished to compress multiple of the same messages, so a different line flushes the error to file...
 					HL.LogToFile ("Log.log", False)
+					try: # Fallback option. More expensive, but still a fraction of a cent... Just in case they gpt-4o-mini model is down.
+						cls.Response_OpenAI = openai.chat.completions.create (
+							model = AIModel, # Latest
+							messages = Messages,
+							temperature = 0, # Only give me what I asked for...
+							top_p = 0.1, # Consider only top 10% probabilities.
+							n = 1, # generate 1 answer. (I think this is default anyway...)
+							max_tokens = 1, # no need to waste much tokens, although may not work properly... Not sure about the exact range, it usually consumes 19-23 tokens even when set to 1.
+							frequency_penalty = -2.0 # Focus on the task (hopefully...)
+						)
+						HL.Log ("Communicate.py: Key accepted! The AI's test answer(" + AIModel + "): " + cls.Response_OpenAI.choices[0].message.content, 'D', LogT.Communicate)
+					except Exception as e:
+						HL.Log (f"Communicate.py: An error occurred: {e}", 'E', LogT.Communicate)
+						HL.Log ("", 'E', LogT.Communicate) # HexaLog keeps the last line if the Log file is not finished to compress multiple of the same messages, so a different line flushes the error to file...
+						HL.LogToFile ("Log.log", False)
+						return
+				else:
+					HL.Log ("", 'I', LogT.Communicate) # HexaLog keeps the last line if the Log file is not finished to compress multiple of the same messages, so a different line flushes the error to file...
 					return
-			cls.Disabled_OpenAI = False
+			if API == "OpenAI":
+				cls.Disabled_OpenAI = False
+			if API == "DeepSeek":
+				cls.Disabled_DeepSeek = False
 	
 	
 	
 	@classmethod
-	def AskTheAI (cls, API, AIModel, Rules, Context, Prompt, MaxOTokens = 128, Temperature = 0.2, TopP = 0.95, PresencePenalty = 0.0, FrequencyPenalty = 0.0, ContextTokens = 128000): # Rules and Context can be None...
-		if API == "OpenAI": # Other APIs are planned to be supported, for now it's only for OpenAI...
+	def AskTheAI (cls, API, AIModel, Key, Rules, Context, Prompt, MaxOTokens = 128, Temperature = 0.2, TopP = 0.95, PresencePenalty = 0.0, FrequencyPenalty = 0.0, ContextTokens = 128000): # Rules and Context can be None...
+		if API == "OpenAI" or API == "DeepSeek": # Other APIs are planned to be supported, for now it's only for OpenAI...
+			openai.api_key = Key
+			if API == "DeepSeek":
+				openai.base_url = "https://api.deepseek.com"
+			else:
+				openai.base_url = cls.OpenAIBaseURL
+			
 			Messages = []
 			if Rules == None:
 				Messages.append ({"role": "system", "content": ""})
@@ -122,6 +149,18 @@ class Communicate:
 							MaxOTokens = ContextWindow - ContextTokens
 						else:
 							MaxOTokens = 4096
+				
+				elif AIModel == "deepseek-chat":
+					Model = AIModel
+					if ContextTokens > 64000:
+						ContextTokens = 64000 # Deepseek models currently have smaller context window.
+					if MaxOTokens > 8000 or MaxOTokens == 0:
+						MaxOTokens = 8000
+				#elif AIModel == "deepseek-reasoner":
+				#	Model = AIModel
+				#	ContextTokens = 64000
+				#	elif MaxOTokens > 4000 or MaxOTokens == 0:
+				#		MaxOTokens = 8000
 				else:
 					HL.Log ("Communicate.py: Unknown AI model: " + AIModel, 'E', LogT.Communicate)
 					

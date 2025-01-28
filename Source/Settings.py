@@ -10,7 +10,7 @@ import Source.TempDir
 
 class Settings:
 	SettingsFile = ".Settings.bin"
-	SoftwareVersion = 0.4 # These should not be loaded, to avoid using old version when updated, but must be saved to check for old...
+	SoftwareVersion = 0.5 # These should not be loaded, to avoid using old version when updated, but must be saved to check for old...
 	DataVersion = 0.2 # These should not be loaded, to avoid using old version when updated...
 	UserName = None
 	MaxContextMsg = 100 # Max Number of messages to send to the AI. (Multiples of 2 recommended.)
@@ -19,6 +19,8 @@ class Settings:
 	AutoContext = True # Auto / selected context inclusion.
 	API = "OpenAI"
 	AIModel = "gpt-4o-mini" # For now...
+	OpenAI_DefaultModel = "gpt-4o-mini"
+	DeepSeek_DefaultModel = "deepseek-chat"
 	WorkDir = Source.TempDir.TempDir ()
 	TTSModel = "tts-1"
 	TTSVoiceMale = "onyx"
@@ -53,13 +55,14 @@ class Settings:
 							HL.Log ("Settings.py: HexaPA version: v" + str (self.SoftwareVersion), 'I', LogT.Settings)
 							self.API = TempObj.API
 							self.AIModel = TempObj.AIModel
+							HL.Log ("Settings.py: Loaded AIModel: " + self.AIModel, 'D', LogT.Settings)
 							self.Temperature = TempObj.Temperature
 							self.TopP = TempObj.TopP
 							self.PresencePenalty = TempObj.PresencePenalty
 							self.FrequencyPenalty = TempObj.PresencePenalty
 							self.MaxOTokens = TempObj.MaxOTokens
 						
-						if TempObj.SoftwareVersion == 0.4:
+						if TempObj.SoftwareVersion == 0.4 or TempObj.SoftwareVersion == 0.5:
 							HL.Log ("Settings.py: HexaPA version: v" + str (self.SoftwareVersion), 'I', LogT.Settings)
 							self.API = TempObj.API
 							self.AIModel = TempObj.AIModel
@@ -73,6 +76,7 @@ class Settings:
 							self.TTSVoiceFemale = TempObj.TTSVoiceFemale
 							self.KeepAudio = TempObj.KeepAudio
 							self.STTModel = TempObj.STTModel
+							# for V0.5 I only added default models here, which should be constant, no need to add another entry...
 					except:
 						pass
 			else:

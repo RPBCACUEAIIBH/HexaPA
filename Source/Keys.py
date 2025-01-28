@@ -14,6 +14,8 @@ from Source.Settings import *
 class Keys:
 	KeyFile = ".Keys.bin"
 	Key_OpenAI = None
+	Key_DeepSeek = None
+	Key_Lookup = None
 	UserKey = None
 	IllegalKey = None
 	
@@ -32,10 +34,19 @@ class Keys:
 					TempKeys = pickle.load (File)
 					F = Fernet (self.UserKey)
 					self.Key_OpenAI = F.decrypt (TempKeys.Key_OpenAI).decode ()
+					self.Key_DeepSeek = F.decrypt (TempKeys.Key_DeepSeek).decode ()
 				if self.Key_OpenAI == None:
 					HL.Log ("Keys.py: OpenAI key not found!", 'E', LogT.Keys)
+				if self.Key_DeepSeek == None:
+					HL.Log ("Keys.py: DeepSeek key not found!", 'E', LogT.Keys)
 			else:
 				HL.Log ("Keys.py: " + self.KeyFile + " not found!", 'W', LogT.Keys)
+		
+		# Constructing lookup table... This is kind of a bodge... All keys and APIs should be accessed from this lookup table...
+		self.Key_Lookup = {
+			"OpenAI": self.Key_OpenAI,
+			"DeepSeek": self.Key_DeepSeek
+		}
 	
 	
 	
@@ -43,7 +54,10 @@ class Keys:
 		F = Fernet (self.UserKey)
 		TempKeys = Keys ()
 		UserKey = None # This should never be recoverable from Keys.bin even by accident, since it can be extracted and used to decrypt user data without password!
-		TempKeys.Key_OpenAI = F.encrypt (self.Key_OpenAI.encode()) # Good idea to encrypt the API key(s) as well, because they could be extracted and used by others while you pay for it.
+		if self.Key_OpenAI != None:
+			TempKeys.Key_OpenAI = F.encrypt (self.Key_OpenAI.encode ()) # Good idea to encrypt the API key(s) as well, because they could be extracted and used by others while you pay for it.
+		if self.Key_DeepSeek != None:
+			TempKeys.Key_DeepSeek = F.encrypt (self.Key_DeepSeek.encode ())
 		with open (self.KeyFile, "wb") as File:
 			pickle.dump (TempKeys, File)
 		HL.Log ("Keys.py: Keys saved!", 'I', LogT.Keys)

@@ -99,11 +99,16 @@ class GUI:
 	
 	
 	
+	def Link_DeepSeek_API (self):
+		webbrowser.open_new_tab ("https://platform.deepseek.com/sign_in")
+	
+	
+	
 	def InitVoice (self):
 		self.VoiceInitialized = True
 		HL.Log ("GUI.py: TTS WDir: " + self.S.WorkDir.TTSDir, 'I', LogT.GUI)
-		TTS (self.S.API, self.S.TTSModel, self.S.WorkDir.TTSDir, self.S.KeepAudio)
-		STT (self.S.API, self.S.STTModel)
+		TTS (self.S.API, self.S.TTSModel, self.S.WorkDir.TTSDir, self.S.KeepAudio, self.K.Key_Lookup.get ("OpenAI"))
+		STT (self.S.API, self.S.STTModel, self.K.Key_Lookup.get ("OpenAI"))
 	
 	
 	
@@ -153,6 +158,7 @@ class GUI:
 		if self.S.UserName == "":
 			self.PasswordRequestWindow.RequestLabel = Window.Label (self.PasswordRequestWindow.PasswordFrame, 1, 0, "EW", "Please enter your username!", Theme.BGColor, Theme.Text, Theme.TextSize, Width = None, PadX = None, PadY = None)
 			self.PasswordRequestWindow.UserNameEntry = Window.Entry (self.PasswordRequestWindow.PasswordFrame, 2, 0, None, Width = 50, PadX = None)
+			self.PasswordRequestWindow.UserNameEntry.focus ()
 		else:
 			self.PasswordRequestWindow.RequestLabel = Window.Label (self.PasswordRequestWindow.PasswordFrame, 1, 0, "EW", "Username:", Theme.BGColor, Theme.Text, Theme.TextSize, Width = None, PadX = None, PadY = None)
 			self.PasswordRequestWindow.UserNameEntry = Window.Entry (self.PasswordRequestWindow.PasswordFrame, 2, 0, None, self.S.UserName, Width = None, PadX = None, Justify = "center")
@@ -164,7 +170,8 @@ class GUI:
 		self.PasswordRequestWindow.EntryFrame.columnconfigure (0, weight = 1)
 		self.PasswordRequestWindow.PasswordEntry = None
 		self.PasswordRequestWindow.PasswordEntry = Window.Entry (self.PasswordRequestWindow.EntryFrame, 0, 0, None, Width = 50, PadX = None, Show = "*")
-		self.PasswordRequestWindow.PasswordEntry.focus ()
+		if self.S.UserName != "":
+			self.PasswordRequestWindow.PasswordEntry.focus ()
 		self.PasswordRequestWindow.ShowPassword = tk.BooleanVar ()
 		self.PasswordRequestWindow.ShowPassword.set (False)
 		self.PasswordRequestWindow.ShowButton = None
@@ -190,23 +197,33 @@ class GUI:
 	
 	
 	def KeyRequestSubmitAction (self):
+		self.KeyRequestWindow.SubmitButton.configure (state = tk.DISABLED)
 		self.K.Key_OpenAI = self.KeyRequestWindow.KeyEntry_OpenAI.get ().strip ()
+		self.K.Key_DeepSeek = self.KeyRequestWindow.KeyEntry_DeepSeek.get ().strip ()
 		if self.K.Key_OpenAI:
-			self.KeyRequestWindow.SubmitButton.configure (state = tk.DISABLED)
-			Communicate (self.S.API, self.S.AIModel, self.K.Key_OpenAI) # Test key
-			if Communicate.Disabled_OpenAI != True: # Key accepted
-				self.Window.unbind ('<Return>', self.EnterBinding)
-				self.Window.unbind ('<Escape>', self.EscBinding)
-				if platform.system () != 'Darwin':
-					self.Window.unbind ('<Control-a>', self.CtrlABinding)
-				else:
-					self.Window.unbind ('<Command-a>', self.CtrlABinding)
-				self.K.SaveKeys ()
-				self.KeyRequestWindow.Base.grid_forget ()
-				self.Main ()
-			else: # Key not accepted
-				self.KeyRequestWindow.ErrorLabel.config (text = "Error: The OpenAI key is invalid! Please try another!")
-				self.KeyRequestWindow.SubmitButton.configure (state = tk.NORMAL)
+			self.K.Key_Lookup[Communicate.API_Lookup.get (self.S.OpenAI_DefaultModel)] = self.K.Key_OpenAI
+			Communicate (Communicate.API_Lookup.get (self.S.OpenAI_DefaultModel), self.S.OpenAI_DefaultModel, self.K.Key_Lookup.get (Communicate.API_Lookup.get (self.S.OpenAI_DefaultModel))) # Test key
+		if self.K.Key_DeepSeek: # Invalid or no Open AI key...
+			self.K.Key_Lookup[Communicate.API_Lookup.get (self.S.DeepSeek_DefaultModel)] = self.K.Key_DeepSeek
+			Communicate (Communicate.API_Lookup.get (self.S.DeepSeek_DefaultModel), self.S.DeepSeek_DefaultModel, self.K.Key_Lookup.get (Communicate.API_Lookup.get (self.S.DeepSeek_DefaultModel))) # Test key
+			if self.K.Key_OpenAI == "": # OpenAI is default, so if it's key not given, but DeepSeek key is, then default to Deepsek API and Model
+				self.S.API = Communicate.API_Lookup.get (self.S.DeepSeek_DefaultModel)
+				self.S.AIModel = self.S.DeepSeek_DefaultModel
+		self.S.SaveSettings ()
+		
+		if Communicate.Disabled_OpenAI != True or Communicate.Disabled_DeepSeek != True:
+			self.Window.unbind ('<Return>', self.EnterBinding)
+			self.Window.unbind ('<Escape>', self.EscBinding)
+			if platform.system () != 'Darwin':
+				self.Window.unbind ('<Control-a>', self.CtrlABinding)
+			else:
+				self.Window.unbind ('<Command-a>', self.CtrlABinding)
+			self.K.SaveKeys ()
+			self.KeyRequestWindow.Base.grid_forget ()
+			self.Main ()
+		else: # Neither Key accepted
+			self.KeyRequestWindow.ErrorLabel.config (text = "Error: All keys key is invalid or missing! Please try again!")
+			self.KeyRequestWindow.SubmitButton.configure (state = tk.NORMAL)
 	
 	
 	
@@ -254,12 +271,35 @@ class GUI:
 		self.KeyRequestWindow.KeyEntry_OpenAI = Window.Entry (self.KeyRequestWindow.OpenAIFrame, 3, 0, "EW", Width = 50, PadX = None)
 		self.KeyRequestWindow.KeyEntry_OpenAI.focus ()
 		
-		# OpenAssistant, Google, and perhaps other alternatives...
-		# No APIs yet... (Don't forget to increment common frame row for the Common frame below...)
+		### DeepSeek frame
+		self.KeyRequestWindow.DeepSeekFrame = None
+		self.KeyRequestWindow.DeepSeekFrame = Window.Frame (self.KeyRequestWindow.Base, Row = 2, Column = 0, Sticky = "N")
+		self.KeyRequestWindow.DeepSeekFrame.columnconfigure (0, weight = 1)
+		self.KeyRequestWindow.PoweredByLogo = None
+		self.KeyRequestWindow.PoweredByLogo = Window.Frame (self.KeyRequestWindow.DeepSeekFrame, Row = 0, Column = 0, Sticky = "EW")
+		self.KeyRequestWindow.PoweredByLogo.columnconfigure (0, weight = 1)
+		self.KeyRequestWindow.PoweredByLogo.rowconfigure (0, weight = 1)
+		self.KeyRequestWindow.PoweredByLabel = None
+		
+		self.KeyRequestWindow.PoweredByLabel = Window.Label (self.KeyRequestWindow.PoweredByLogo, 0, 0, "NSE", "Powered by:", Theme.BGColor, TextSize = 24, Anchor = "center", Width = None)
+		self.DeepSeekLogo = ImageTk.PhotoImage (Image.open (io.BytesIO (cairosvg.svg2png (bytestring = open ("Images/DeepSeek-Logo.svg", "rb").read (), scale = 1.1)))) # Either use: "scale = 1" OR "output_width = 150, output_height = 150"
+		self.KeyRequestWindow.DeepSeekLogo = None
+		self.KeyRequestWindow.DeepSeekLogo = Window.ImageLabel (self.KeyRequestWindow.PoweredByLogo, 0, 1, "W", self.DeepSeekLogo, PadX = 15, PadY = 20, Command = self.Link_DeepSeek_API)
+		
+		Text = "Please enter your OpenAI API key!\nIf you don't have one clik here and get one."
+		self.KeyRequestWindow.DeepSeekRequestLabel = None
+		self.KeyRequestWindow.DeepSeekRequestLabel = Window.Label (self.KeyRequestWindow.DeepSeekFrame, 1, 0, "EW", Text, Theme.BGColor, Width = None, PadX = None, PadY = None)
+		self.KeyRequestWindow.DeepSeekRequestLabel.bind ("<Button-1>", lambda e: self.Link_DeepSeek_API ())
+		Text = "(You will need to register. Once you're logged in, find manage account in the\ntop right corner and set up payment method at billing, then generate an API key.\nIt's affordable, but you may also want to set a monthly limit, just in case.)"
+		self.KeyRequestWindow.DeepSeekGuideLabel = None
+		self.KeyRequestWindow.DeepSeekGuideLabel = Window.Label (self.KeyRequestWindow.DeepSeekFrame, 2, 0, "EW", Text, Theme.BGColor, Theme.SmallText, Theme.SmallTextSize, Width = None, PadX = None, PadY = None)
+		self.KeyRequestWindow.DeepSeekGuideLabel.bind ("<Button-1>", lambda e: self.Link_DeepSeek_API ())
+		self.KeyRequestWindow.KeyEntry_DeepSeek = None
+		self.KeyRequestWindow.KeyEntry_DeepSeek = Window.Entry (self.KeyRequestWindow.DeepSeekFrame, 3, 0, "EW", Width = 50, PadX = None)
 		
 		### Common frame
 		self.KeyRequestWindow.CommonFrame = None
-		self.KeyRequestWindow.CommonFrame = Window.Frame (self.KeyRequestWindow.Base, Row = 2, Column = 0, Sticky = "EW")
+		self.KeyRequestWindow.CommonFrame = Window.Frame (self.KeyRequestWindow.Base, Row = 3, Column = 0, Sticky = "EW")
 		self.KeyRequestWindow.CommonFrame.columnconfigure (0, weight = 1)
 		self.KeyRequestWindow.CommonFrame.rowconfigure (0, weight = 1)
 		if Error == None:
@@ -290,6 +330,8 @@ class GUI:
 	def CreateNewChat (self):
 		self.Window.unbind ('<Return>', self.EnterBinding)
 		self.S.AIModel = self.MainWindow.Model.get ()
+		self.S.API = Communicate.API_Lookup.get (self.S.AIModel)
+		HL.Log ("GUI.py: Selected API: " + self.S.API, 'D', LogT.GUI)
 		HL.Log ("GUI.py: Selected model: " + self.S.AIModel, 'D', LogT.GUI)
 		self.S.MaxContextMsg = int (self.MainWindow.MaxContextMsgEntry.get ())
 		self.S.MaxTokens = int (self.MainWindow.MaxTokensEntry.get ())
@@ -311,6 +353,8 @@ class GUI:
 	def ContinueExistingChat (self, ArgList):
 		self.Window.unbind ('<Return>', self.EnterBinding)
 		self.S.AIModel = self.MainWindow.Model.get ()
+		self.S.API = Communicate.API_Lookup.get (self.S.AIModel)
+		HL.Log ("GUI.py: Selected API: " + self.S.API, 'D', LogT.GUI)
 		HL.Log ("GUI.py: Selected model: " + self.S.AIModel, 'D', LogT.GUI)
 		self.S.MaxContextMsg = int (self.MainWindow.MaxContextMsgEntry.get ())
 		self.S.MaxTokens = int (self.MainWindow.MaxTokensEntry.get ())
@@ -410,35 +454,35 @@ class GUI:
 		self.MainWindow.ModelFrame = Window.Frame (self.MainWindow.SettingsFrame, Row = 1, Column = 0, PadY = 0, Sticky = "W")
 		self.MainWindow.ModelFrame.columnconfigure (1, weight = 1)
 		self.MainWindow.ModelFrame.columnconfigure (3, weight = 1)
-		self.MainWindow.ModelLabel = None
-		self.MainWindow.ModelLabel = Window.Label (self.MainWindow.ModelFrame, 0, 0, "W", "Model selection:", Theme.BGColor, Anchor = "w", Width = None)
+		self.MainWindow.ModelLabel1 = None
+		self.MainWindow.ModelLabel1 = Window.Label (self.MainWindow.ModelFrame, 0, 0, "W", "Model Options:", Theme.BGColor, Anchor = "w", Width = None)
+		self.MainWindow.ModelLabel1 = None
+		self.MainWindow.ModelLabel1 = Window.Label (self.MainWindow.ModelFrame, 1, 0, "W", "OpenAI:", Theme.BGColor, Anchor = "w", Width = None)
+		self.MainWindow.ModelLabel2 = None
+		self.MainWindow.ModelLabel2 = Window.Label (self.MainWindow.ModelFrame, 2, 0, "W", "Deepseek:", Theme.BGColor, Anchor = "w", Width = None)
 		self.MainWindow.Model = tk.StringVar ()
 		self.MainWindow.GPT4oMiniButton = None
 		self.MainWindow.SpacerLabel = None
 		self.MainWindow.GPT4oButton = None
 		self.MainWindow.Spacer2Label = None
 		self.MainWindow.GPT4Button = None
+		self.MainWindow.DSChatButton = None
 		GPT4oMiniTooltip = "Cheaper, faster, fairly capable, available to eveyone, with 128K context length but 16k output.\n(Successor of GPT 3.5 Turbo, Training Data: Oct 2023, Output Token Limit 16384.)"
 		GPT4oTooltip = "More expensive, slower then 4o Mini but faster and cheaper then 4 Turbo, with 128K context length.\n(Successor of GPT 4 Turbo, Training Data: Oct 2023, Output Token Limit 4096.)"
 		GPT4Tooltip = "More expensive, slower, very capable, available after first payment of $1, with 128K context length.\n(Training Data: Dec 2023, Output Token Limit 4096.)"
-		if self.S.AIModel == "gpt-4o-mini":
-			self.MainWindow.GPT4oMiniButton = Window.RadioButton (self.MainWindow.ModelFrame, 0, 1, "W", "GPT-4o Mini", self.MainWindow.Model, "gpt-4o-mini", Default = True, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oMiniTooltip)
-			self.MainWindow.SpacerLabel = Window.Label (self.MainWindow.ModelFrame, 0, 2, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
-			self.MainWindow.GPT4oButton = Window.RadioButton (self.MainWindow.ModelFrame, 0, 3, "W", "GPT-4o", self.MainWindow.Model, "gpt-4o", Default = False, Width = 8, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oTooltip)
-			self.MainWindow.Spacer2Label = Window.Label (self.MainWindow.ModelFrame, 0, 4, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
-			self.MainWindow.GPT4Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 5, "W", "GPT-4 Turbo", self.MainWindow.Model, "gpt-4-turbo", Default = False, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4Tooltip)
-		elif self.S.AIModel == "gpt-4o":
-			self.MainWindow.GPT4oMiniButton = Window.RadioButton (self.MainWindow.ModelFrame, 0, 1, "W", "GPT-4o Mini", self.MainWindow.Model, "gpt-4o-mini", Default = False, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oMiniTooltip)
-			self.MainWindow.SpacerLabel = Window.Label (self.MainWindow.ModelFrame, 0, 2, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
-			self.MainWindow.GPT4oButton = Window.RadioButton (self.MainWindow.ModelFrame, 0, 3, "W", "GPT-4o", self.MainWindow.Model, "gpt-4o", Default = True, Width = 8, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oTooltip)
-			self.MainWindow.SpacerLabel = Window.Label (self.MainWindow.ModelFrame, 0, 4, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
-			self.MainWindow.GPT4Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 5, "W", "GPT-4 Turbo", self.MainWindow.Model, "gpt-4-turbo", Default = False, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4Tooltip)
-		else:
-			self.MainWindow.GPT4oMiniButton = Window.RadioButton (self.MainWindow.ModelFrame, 0, 1, "W", "GPT-4o Mini", self.MainWindow.Model, "gpt-4o-mini", Default = False, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oMiniTooltip)
-			self.MainWindow.SpacerLabel = Window.Label (self.MainWindow.ModelFrame, 0, 2, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
-			self.MainWindow.GPT4oButton = Window.RadioButton (self.MainWindow.ModelFrame, 0, 3, "W", "GPT-4o", self.MainWindow.Model, "gpt-4o", Default = False, Width = 8, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oTooltip)
-			self.MainWindow.SpacerLabel = Window.Label (self.MainWindow.ModelFrame, 0, 4, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
-			self.MainWindow.GPT4Button = Window.RadioButton (self.MainWindow.ModelFrame, 0, 5, "W", "GPT-4 Turbo", self.MainWindow.Model, "gpt-4-turbo", Default = True, Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4Tooltip)
+		DSChatTooltip = "Advanced and cheap Chinese alternative, with 64K context length. They use API data for training!\n(Training Data: ???, Output Token Limit 8000.)"
+		self.MainWindow.GPT4oMiniButton = Window.RadioButton (self.MainWindow.ModelFrame, 1, 1, "W", "GPT-4o Mini", self.MainWindow.Model, "gpt-4o-mini", Default = (self.S.AIModel == "gpt-4o-mini"), Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oMiniTooltip)
+		self.MainWindow.SpacerLabel = Window.Label (self.MainWindow.ModelFrame, 1, 2, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
+		self.MainWindow.GPT4oButton = Window.RadioButton (self.MainWindow.ModelFrame, 1, 3, "W", "GPT-4o", self.MainWindow.Model, "gpt-4o", Default = (self.S.AIModel == "gpt-4o"), Width = 8, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4oTooltip)
+		self.MainWindow.Spacer2Label = Window.Label (self.MainWindow.ModelFrame, 1, 4, "W", "", Theme.BGColor, Anchor = "w", Width = 1)
+		self.MainWindow.GPT4Button = Window.RadioButton (self.MainWindow.ModelFrame, 1, 5, "W", "GPT-4 Turbo", self.MainWindow.Model, "gpt-4-turbo", Default = (self.S.AIModel == "gpt-4-turbo"), Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = GPT4Tooltip)
+		self.MainWindow.DSChatButton = Window.RadioButton (self.MainWindow.ModelFrame, 2, 1, "W", "Chat", self.MainWindow.Model, "deepseek-chat", Default = (self.S.AIModel == "deepseek-chat"), Width = 12, Height = 1, PadX = 0, PadY = 0, TooltipLabel = self.MainWindow.TooltipLabel, TooltipText = DSChatTooltip)
+		if Communicate.Disabled_OpenAI == True:
+			self.MainWindow.GPT4oMiniButton.config (state = tk.DISABLED)
+			self.MainWindow.GPT4oButton.config (state = tk.DISABLED)
+			self.MainWindow.GPT4Button.config (state = tk.DISABLED)
+		elif Communicate.Disabled_DeepSeek == True:
+			self.MainWindow.DSChatButton.config (state = tk.DISABLED)
 		
 		## Max Input Tokens
 		self.MainWindow.MaxTokensFrame = None
@@ -710,7 +754,9 @@ class GUI:
 			self.ChatWindow.Messages[Index].ExcludeButton.config (state = tk.DISABLED)
 		else:
 			self.ChatWindow.Messages[Index].ReadButton = None
-			self.ChatWindow.Messages[Index].ReadButton = Window.ImageButton (self.ChatWindow.Messages[Index].ButtonFrame, 0, 4, "NS", self.SVGFile_SpeakerIcon, lambda: TTS.Read (self.ChatWindow.Messages[Index].TextBox.get ("1.0", "end").strip (), self.S.TTSVoiceMale, "TestTTS"), Width = 30, PadX = 0, PadY = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Reads the message aloud using AI text to speech function.")
+			self.ChatWindow.Messages[Index].ReadButton = Window.ImageButton (self.ChatWindow.Messages[Index].ButtonFrame, 0, 4, "NS", self.SVGFile_SpeakerIcon, lambda: TTS.Read (self.ChatWindow.Messages[Index].TextBox.get ("1.0", "end").strip (), self.S.TTSVoiceMale, Title = "Message", ID = Index, Key = self.K.Key_Lookup.get ("OpenAI")), Width = 30, PadX = 0, PadY = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Reads the message aloud using AI text to speech function.")
+			if Communicate.Disabled_OpenAI == True: # Key rejected or no key so not available...
+				self.ChatWindow.Messages[Index].ReadButton.configure (state = tk.DISABLED)
 		self.ChatWindow.Messages[Index].TextBox.focus ()
 		
 		# Refresh canvas scroll region
@@ -760,14 +806,18 @@ class GUI:
 		Messages.append (Prompt)
 		
 		# Calculate remaining tokens for context
-		T = Tokenizer (self.S.API, self.S.AIModel, Messages)
-		MaxContextTokens = 128000 # Since gpt-4-turbo, gpt-4o, gpt-4o-mini all have the same large context window. (Earlier models had far less, and different sizes...)
-		if self.S.MaxTokens == 0:
-			MaxContextTokens = MaxContextTokens - self.S.MaxOTokens - T.TokenCount_Rules - T.TokenCount_Prompt
-		else:
-			MaxContextTokens = self.S.MaxTokens - T.TokenCount_Rules - T.TokenCount_Prompt
+		if self.S.API == "OpenAI": # Only available with Open AI at this time...
+			T = Tokenizer (self.S.API, self.S.AIModel, Messages)
+			MaxContextTokens = 128000 # Since gpt-4-turbo, gpt-4o, gpt-4o-mini all have the same large context window. (Earlier models had far less, and different sizes...)
+			if self.S.MaxTokens == 0:
+				MaxContextTokens = MaxContextTokens - self.S.MaxOTokens - T.TokenCount_Rules - T.TokenCount_Prompt
+			else:
+				MaxContextTokens = self.S.MaxTokens - T.TokenCount_Rules - T.TokenCount_Prompt
+			
+			HL.Log ("GUI.py: MaxTokens allowed: " + str (self.S.MaxTokens) + ", Estimated rules tokens: " + str (T.TokenCount_Rules) + ", Estimated prompt tokens: " + str (T.TokenCount_Prompt) + ", MaxOTokens allowed: " + str (self.S.MaxOTokens) +  " --> MaxContextTokens " + str (MaxContextTokens) + ", MaxContextMessages: " + str (self.S.MaxContextMsg), 'D', LogT.GUI)
 		
-		HL.Log ("GUI.py: MaxTokens allowed: " + str (self.S.MaxTokens) + ", Estimated rules tokens: " + str (T.TokenCount_Rules) + ", Estimated prompt tokens: " + str (T.TokenCount_Prompt) + ", MaxOTokens allowed: " + str (self.S.MaxOTokens) +  " --> MaxContextTokens " + str (MaxContextTokens) + ", MaxContextMessages: " + str (self.S.MaxContextMsg), 'D', LogT.GUI)
+		elif self.S.API == "DeepSeek":
+			MaxContextTokens = 64000
 		
 		# Generate Context
 		ContextIDs, Context = Commands.GenerateContext (self.K.UserKey, self.S, self.Conversation.Blocks, MaxContextTokens)
@@ -781,29 +831,37 @@ class GUI:
 		if Context != None:
 			Messages.extend (Context)
 		Messages.append (Prompt)
-		T = Tokenizer (self.S.API, self.S.AIModel, Messages)
-		self.ChatWindow.StatsLabel.config (text = "Token estimations:   Total to send: " + str (T.TokenCount_Total) + "\nRules: " + str (T.TokenCount_Rules) + "   Context: " + str (T.TokenCount_Context) + "   Prompt: " + str (T.TokenCount_Prompt))
+		if self.S.API == "OpenAI": # Only available with Open AI at this time...
+			T = Tokenizer (self.S.API, self.S.AIModel, Messages)
+			self.ChatWindow.StatsLabel.config (text = "Token estimations:   Total to send: " + str (T.TokenCount_Total) + "\nRules: " + str (T.TokenCount_Rules) + "   Context: " + str (T.TokenCount_Context) + "   Prompt: " + str (T.TokenCount_Prompt))
 		self.Window.update ()
-		
+
 		# This is for testing only... ForceLargeContext should be False for release!
-		ForceLargeContext = False
+		if self.S.API == "DeepSeek":
+			ForceLargeContext = True # There's no token estimation yet...
+		else:
+			ForceLargeContext = False
+		
 		if ForceLargeContext == True:
 			EstimatedTokens = MaxContextTokens
 		else:
 			EstimatedTokens = T.TokenCount_Total
 		
 		# Debug
-		if Context != None and Args.debug:
-			for Item in Context:
-				print (Item)
-		HL.Log ("GUI.py: Estimated context tokens: " + str (T.TokenCount_Context) + " --> Estimated total tokens: " + str (T.TokenCount_Total), 'D', LogT.GUI)
+#		if Context != None and Args.debug:
+#			for Item in Context:
+#				print (Item)
+#		HL.Log ("GUI.py: Estimated context tokens: " + str (T.TokenCount_Context) + " --> Estimated total tokens: " + str (T.TokenCount_Total), 'D', LogT.GUI)
 		
 		### Record promt into a new block.
 		self.Conversation.NewBlock (self.ChatWindow.Messages[PromptIndex].MessageData.Dump (self.K.UserKey))
 		self.ChatWindow.Messages[PromptIndex].MessageData.BlockID = self.Conversation.Blocks[len (self.Conversation.Blocks) - 1].BlockID
 		
+		Key = self.K.Key_Lookup.get (self.S.API)
+		HL.Log ("GUI.py: Communicating with API: " + self.S.API + "   Model: " + self.S.AIModel + "   Key: " + Key, 'D', LogT.GUI)
+		
 		### Send message then display and recod response to new block
-		Response = Communicate.AskTheAI (self.S.API, self.S.AIModel, Rules, Context, Prompt, self.S.MaxOTokens, self.S.Temperature, self.S.TopP, self.S.PresencePenalty, self.S.FrequencyPenalty, EstimatedTokens) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 128, Temperature = 0.2, TopP = 0.95, PresencePenalty = 0.0, FrequencyPenalty = 0.0, ContextTokens = 4096
+		Response = Communicate.AskTheAI (self.S.API, self.S.AIModel, Key, Rules, Context, Prompt, self.S.MaxOTokens, self.S.Temperature, self.S.TopP, self.S.PresencePenalty, self.S.FrequencyPenalty, EstimatedTokens) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 128, Temperature = 0.2, TopP = 0.95, PresencePenalty = 0.0, FrequencyPenalty = 0.0, ContextTokens = 4096
 		ErrorText = None
 		if (Response.object != "chat.completion"):
 			ErrorText = Response.ErrorMessage
@@ -847,7 +905,7 @@ class GUI:
 			Context = [{"role": "user", "content": "What is the subject of the following message?\n\nMessage:\nGive me a sentence for testing my application."}, {"role": "assistant", "content": "Sentence request for testing."}] # This works with Content = None, but more reliable with an example. Otherwise it may start with "Subject: ", or "The subject of this..." which is not desirable.
 			Prompt = {"role": "user", "content": "What is the subject of the following message?\n\nMessage:\n" + FirstMsg.Message}
 			HL.Log ("GUI.py: Unspecified Subject! --> Asking the AI to summarize it in a sentence.", 'I', LogT.GUI)
-			Response = Communicate.AskTheAI (self.S.API, self.S.AIModel, SubjectDetectionRules, Context, Prompt) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
+			Response = Communicate.AskTheAI (self.S.API, self.S.AIModel, Key, SubjectDetectionRules, Context, Prompt) # Arguments: API, AIModel, Rules, Context, Prompt, MaxTokens = 2048
 			if (Response.object == "chat.completion"): # AI Respose
 				self.Conversation.Subject = Response.choices[0].message.content
 				HL.Log ("GUI.py: AI said the subject is: " + self.Conversation.Subject, "I", LogT.GUI)
@@ -940,10 +998,12 @@ class GUI:
 		self.ChatWindow.UserInputWrap = tk.BooleanVar (value = 1)
 		self.ChatWindow.SpacerFrame = None
 		self.ChatWindow.SpacerFrame = Window.Frame (self.ChatWindow.UserInputButtons, Row = 0, Column = 2, PadX = 0, PadY = 0, Sticky = "NSEW")
-		#self.ChatWindow.VoiceInputButton = None
-		#self.ChatWindow.VoiceInputButton = Window.ImageButton (self.ChatWindow.UserInputButtons, 0, 3, "NSE", self.SVGFile_MicIcon, lambda: self.ChatWindow.UserInputTextBox.insert ('end', STT.Transcribe ("Audio/TTS/TestTTS.mp3")), PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Voice recording and transcription to text input.")
+#		self.ChatWindow.VoiceInputButton = None
+#		self.ChatWindow.VoiceInputButton = Window.ImageButton (self.ChatWindow.UserInputButtons, 0, 3, "NSE", self.SVGFile_MicIcon, lambda: self.ChatWindow.UserInputTextBox.insert ('end', STT.Transcribe ("Audio/TTS/TestTTS.mp3"), self.K.Key_Lookup.get ("OpenAI")), PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Voice recording and transcription to text input.")
+#		self.ChatWindow.VoiceInputButton.configure (state = tk.DISABLED)
 		self.ChatWindow.InputReadButton = None
-		self.ChatWindow.InputReadButton = Window.ImageButton (self.ChatWindow.UserInputButtons, 0, 4, "NSE", self.SVGFile_SpeakerIcon, lambda: TTS.Read (self.ChatWindow.UserInputTextBox.get ("1.0", "end").strip (), self.S.TTSVoiceMale, "TestTTS"), TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Reads text from input using AI text to speech function.")
+		self.ChatWindow.InputReadButton = Window.ImageButton (self.ChatWindow.UserInputButtons, 0, 4, "NSE", self.SVGFile_SpeakerIcon, lambda: TTS.Read (self.ChatWindow.UserInputTextBox.get ("1.0", "end").strip (), self.S.TTSVoiceMale, "UserInput", ID = 0, Key = self.K.Key_Lookup.get ("OpenAI")), TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Reads text from input using AI text to speech function.")
+		self.ChatWindow.InputReadButton.configure (state = tk.DISABLED)
 		self.ChatWindow.WrapButton = None
 		self.ChatWindow.WrapButton = Window.CheckButton (self.ChatWindow.UserInputButtons, 0, 5, "NSE", "Wrap", self.ChatWindow.UserInputWrap, lambda: self.ChatWindow.UserInputTextBox.configure (wrap = ("word" if self.ChatWindow.UserInputWrap.get () else "none")), Height = 1, PadX = 0, TooltipLabel = self.ChatWindow.TooltipLabel, TooltipText = "Wrap/not wrap text in the prompt textbox.\n(Text is readable wrapped, however this may not be desirable for code.)")
 		self.ChatWindow.WrapButton.configure (state = tk.DISABLED) # Every button should be disabled until the conversation is loaded...
@@ -1007,9 +1067,13 @@ class GUI:
 			self.ChatWindow.AutoContextButton.configure (state = tk.NORMAL)
 			self.ChatWindow.WrapButton.configure (state = tk.NORMAL)
 			self.ChatWindow.UnincludeButton.configure (state = tk.NORMAL)
-			self.ChatWindow.TokenButton.configure (state = tk.NORMAL)
-			if Communicate.Disabled_OpenAI == False: # Key rejected or no key
+			if Communicate.Disabled_OpenAI == False or Communicate.Disabled_DeepSeek == False: # Key rejected or no key
 				self.ChatWindow.SendButton.configure (state = tk.NORMAL)
+				#self.ChatWindow.VoiceInputButton.configure (state = tk.NORMAL)
+				self.ChatWindow.InputReadButton.configure (state = tk.NORMAL)
+			if Communicate.Disabled_OpenAI == False and self.S.API == "OpenAI": # Only available with Open AI at this time...
+				self.ChatWindow.TokenButton.configure (state = tk.NORMAL)
+				
 		
 		except Exception:
 			HL.Log ("GUI.py: Could not parse block content! It can be corrupted or encrypted with other username and password combination... (This can happen when .Keys.bin and .Settings.bin has been deleted, and new credentials entered. If that's the case and block validation was successful, the conversation can still be decrypted with the initial username and password combination.)", 'E', LogT.GUI)

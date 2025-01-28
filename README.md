@@ -132,8 +132,9 @@ pip install --upgrade openai tiktoken pydub simpleaudio
 - Import chat option - Added --user, --password and --import-chat options, so exported chat can now be imported from json... (The --user and --password options work, but there is no practical use for them yet. It's for scripting, but CLI function is incomplete at the moment...)
 - Max context = model context length - max allowed tokens. GPT-3.5 Turbo uses latest 4k model, and legacy 16k(currently only available with larger context) when allowed tokens > 2048
 
-### Version v0.4
+### Version v0.4 (Major update!)
 - Debugging improvements... (I really should have done this a long time ago...)
 - Updated models GPT-4o (Cheaper then GPT-4-turbo) and GPT-4o-mini Cheaper faster, and smarter then GPT-3.5 (Which is being retired.)
 - Added TTS but the voice is not selectable yet. (Also started STT but that needs more work...)
 - Bug fix - It was saving but not loading AI settings on launch. Instead it used the default. It's now fixed.
+- Finally and alternative! Added support for DeepSeek chat model. (Not yet the R1 model yet... you can change between models, even from different companies, and also use OpenAI's TTS function, when DeepSeek model is selected if you have a key for both APIs!)
